@@ -240,6 +240,13 @@ export default function RoomsPage() {
     }
   };
 
+  const getRoomStatus = (room: Room): "available" | "full" | "maintenance" => {
+    if (room.occupied >= room.capacity) {
+      return "full";
+    }
+    return "available";
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "available":
@@ -255,15 +262,16 @@ export default function RoomsPage() {
 
   const filteredRooms = rooms.filter((room) => {
     const matchesBranch = filterBranch === "all" || room.branch === filterBranch;
-    const matchesStatus = filterStatus === "all" || room.status === filterStatus;
+    const roomStatus = getRoomStatus(room);
+    const matchesStatus = filterStatus === "all" || roomStatus === filterStatus;
     return matchesBranch && matchesStatus;
   });
 
   const stats = {
     total: rooms.length,
-    available: rooms.filter((r) => r.status === "available").length,
-    full: rooms.filter((r) => r.status === "full").length,
-    maintenance: rooms.filter((r) => r.status === "maintenance").length,
+    available: rooms.filter((r) => getRoomStatus(r) === "available").length,
+    full: rooms.filter((r) => getRoomStatus(r) === "full").length,
+    maintenance: 0, // maintenance status not implemented yet
   };
 
   return (
@@ -479,8 +487,8 @@ export default function RoomsPage() {
                       <h3 className="text-2xl font-light text-neutral-900">Room {room.roomNumber}</h3>
                       <p className="text-sm text-neutral-600">Floor {room.floor} • {room.branch}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(room.status)}`}>
-                      {room.status}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(getRoomStatus(room))}`}>
+                      {getRoomStatus(room)}
                     </span>
                   </div>
 
