@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
 
 interface MenuItem {
-  itemId: string;
+  menuId: string;
   name: string;
   description: string;
   price: number;
   category: "breakfast" | "lunch" | "dinner" | "snacks";
-  availability: boolean;
+  available: boolean;
   imageUrl?: string;
 }
 
@@ -25,7 +25,7 @@ export default function FoodMenuPage() {
     description: "",
     price: 0,
     category: "breakfast" as "breakfast" | "lunch" | "dinner" | "snacks",
-    availability: true,
+    available: true,
   });
 
   const categories = ["breakfast", "lunch", "dinner", "snacks"];
@@ -37,95 +37,95 @@ export default function FoodMenuPage() {
   const fetchMenuItems = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/food-menu", {
+      const response = await fetch("/api/admin/food", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setMenuItems(data.items || []);
+        setMenuItems(data.menu || []);
       } else {
-        // Mock data for development
+        console.error("Failed to fetch menu items");
         setMenuItems([
           {
-            itemId: "1",
+            menuId: "1",
             name: "Paneer Paratha",
             description: "Whole wheat paratha stuffed with spiced paneer",
             price: 40,
             category: "breakfast",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "2",
+            menuId: "2",
             name: "Idli Sambar",
             description: "Steamed rice cakes with lentil curry and chutney",
             price: 35,
             category: "breakfast",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "3",
+            menuId: "3",
             name: "Dal Makhani with Rice",
             description: "Creamy black lentils with steamed basmati rice",
             price: 70,
             category: "lunch",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "4",
+            menuId: "4",
             name: "Chicken Biryani",
             description: "Fragrant basmati rice cooked with marinated chicken",
             price: 120,
             category: "lunch",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "5",
+            menuId: "5",
             name: "Veg Thali",
             description: "Complete meal with dal, sabzi, roti, rice, and curd",
             price: 90,
             category: "lunch",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "6",
+            menuId: "6",
             name: "Roti with Paneer Curry",
             description: "Indian bread with cottage cheese curry",
             price: 80,
             category: "dinner",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "7",
+            menuId: "7",
             name: "Fried Rice",
             description: "Indo-Chinese style fried rice with vegetables",
             price: 65,
             category: "dinner",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "8",
+            menuId: "8",
             name: "Samosa",
             description: "Crispy pastry filled with spiced potatoes",
             price: 20,
             category: "snacks",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "9",
+            menuId: "9",
             name: "Veg Sandwich",
             description: "Grilled sandwich with vegetables and cheese",
             price: 40,
             category: "snacks",
-            availability: true,
+            available: true,
           },
           {
-            itemId: "10",
+            menuId: "10",
             name: "Pakora",
             description: "Crispy vegetable fritters",
             price: 30,
             category: "snacks",
-            availability: false,
+            available: false,
           },
         ]);
       }
@@ -141,17 +141,18 @@ export default function FoodMenuPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = editingItem
-        ? `/api/admin/food-menu/${editingItem.itemId}`
-        : "/api/admin/food-menu";
 
-      const response = await fetch(url, {
-        method: editingItem ? "PUT" : "POST",
+      const body = editingItem
+        ? { menuId: editingItem.menuId, updates: formData }
+        : formData;
+
+      const response = await fetch("/api/admin/food", {
+        method: editingItem ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -163,7 +164,7 @@ export default function FoodMenuPage() {
           description: "",
           price: 0,
           category: "breakfast",
-          availability: true,
+          available: true,
         });
         fetchMenuItems();
       } else {
@@ -171,7 +172,7 @@ export default function FoodMenuPage() {
         if (editingItem) {
           setMenuItems(
             menuItems.map((item) =>
-              item.itemId === editingItem.itemId
+              item.menuId === editingItem.itemId
                 ? { ...item, ...formData }
                 : item
             )
@@ -180,7 +181,7 @@ export default function FoodMenuPage() {
           setMenuItems([
             ...menuItems,
             {
-              itemId: String(menuItems.length + 1),
+              menuId: String(menuItems.length + 1),
               ...formData,
             },
           ]);
@@ -193,7 +194,7 @@ export default function FoodMenuPage() {
           description: "",
           price: 0,
           category: "breakfast",
-          availability: true,
+          available: true,
         });
       }
     } catch (error) {
@@ -209,17 +210,17 @@ export default function FoodMenuPage() {
       description: item.description,
       price: item.price,
       category: item.category,
-      availability: item.availability,
+      available: item.available,
     });
     setShowAddModal(true);
   };
 
-  const handleDelete = async (itemId: string) => {
+  const handleDelete = async (menuId: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/food-menu/${itemId}`, {
+      const response = await fetch(`/api/admin/food?menuId=${itemId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -229,7 +230,7 @@ export default function FoodMenuPage() {
         fetchMenuItems();
       } else {
         // Update mock data
-        setMenuItems(menuItems.filter((item) => item.itemId !== itemId));
+        setMenuItems(menuItems.filter((item) => item.menuId !== itemId));
         alert("Item deleted successfully!");
       }
     } catch (error) {
@@ -318,7 +319,7 @@ export default function FoodMenuPage() {
                 description: "",
                 price: 0,
                 category: "breakfast",
-                availability: true,
+                available: true,
               });
               setShowAddModal(true);
             }}
@@ -338,7 +339,7 @@ export default function FoodMenuPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item, index) => (
             <motion.div
-              key={item.itemId}
+              key={item.menuId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -379,11 +380,11 @@ export default function FoodMenuPage() {
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-neutral-600">Availability:</span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    item.availability
+                    item.available
                       ? "bg-green-500/10 text-green-600"
                       : "bg-red-500/10 text-red-600"
                   }`}>
-                    {item.availability ? "Available" : "Unavailable"}
+                    {item.available ? "Available" : "Unavailable"}
                   </span>
                 </div>
 
@@ -395,7 +396,7 @@ export default function FoodMenuPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(item.itemId)}
+                    onClick={() => handleDelete(item.menuId)}
                     className="flex-1 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-2xl transition-all text-sm font-medium"
                   >
                     Delete
@@ -455,8 +456,8 @@ export default function FoodMenuPage() {
                   <label className="block text-sm font-medium text-neutral-700 mb-2">Price (Rs)</label>
                   <input
                     type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                     className="w-full px-4 py-3 rounded-2xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-black/20"
                     min="0"
                     step="0.01"
@@ -484,8 +485,8 @@ export default function FoodMenuPage() {
                   <label className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      checked={formData.availability}
-                      onChange={(e) => setFormData({ ...formData, availability: e.target.checked })}
+                      checked={formData.available}
+                      onChange={(e) => setFormData({ ...formData, available: e.target.checked })}
                       className="w-5 h-5 rounded border-neutral-300 text-blue-500 focus:ring-2 focus:ring-black/20"
                     />
                     <span className="text-sm font-medium text-neutral-700">Available for ordering</span>

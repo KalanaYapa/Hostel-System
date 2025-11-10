@@ -17,9 +17,27 @@ interface Student {
   registrationDate: string;
 }
 
+interface Branch {
+  branchId: string;
+  name: string;
+  description?: string;
+  capacity: number;
+  occupied: number;
+}
+
+interface Room {
+  branch: string;
+  roomNumber: string;
+  capacity: number;
+  occupied: number;
+  students: string[];
+}
+
 export default function StudentsManagementPage() {
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({
@@ -30,6 +48,8 @@ export default function StudentsManagementPage() {
 
   useEffect(() => {
     fetchStudents();
+    fetchBranches();
+    fetchRooms();
   }, []);
 
   const fetchStudents = async () => {
@@ -49,6 +69,42 @@ export default function StudentsManagementPage() {
       console.error("Failed to fetch students:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBranches = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/admin/branches", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBranches(data.branches || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch branches:", error);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/admin/rooms", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRooms(data.rooms || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
     }
   };
 
@@ -195,7 +251,9 @@ export default function StudentsManagementPage() {
                         <div>{student.phone}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {student.branch || (
+                        {student.branch ? (
+                          branches.find(b => b.branchId === student.branch)?.name || student.branch
+                        ) : (
                           <span className="text-orange-600">Not Assigned</span>
                         )}
                       </td>
@@ -269,30 +327,53 @@ export default function StudentsManagementPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Branch
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.branch}
                   onChange={(e) =>
-                    setFormData({ ...formData, branch: e.target.value })
+                    setFormData({ ...formData, branch: e.target.value, roomNumber: "" })
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
-                  placeholder="e.g., A-Block, North Wing"
-                />
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map((branch) => (
+                    <option key={branch.branchId} value={branch.branchId}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Room Number
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.roomNumber}
                   onChange={(e) =>
                     setFormData({ ...formData, roomNumber: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
-                  placeholder="e.g., 101, 202"
-                />
+                  disabled={!formData.branch}
+                >
+                  <option value="">
+                    {!formData.branch
+                      ? "Select branch first"
+                      : "Select Room"}
+                  </option>
+                  {rooms
+                    .filter((room) => room.branch === formData.branch)
+                    .filter((room) => room.occupied < room.capacity)
+                    .map((room) => (
+                      <option key={room.roomNumber} value={room.roomNumber}>
+                        Room {room.roomNumber} ({room.occupied}/{room.capacity} occupied)
+                      </option>
+                    ))}
+                </select>
+                {formData.branch && rooms.filter((room) => room.branch === formData.branch && room.occupied < room.capacity).length === 0 && (
+                  <p className="text-xs text-red-600 mt-1">
+                    No available rooms in this branch
+                  </p>
+                )}
               </div>
             </div>
 

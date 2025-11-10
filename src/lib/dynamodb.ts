@@ -25,6 +25,7 @@ const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || "hostel-management";
 export enum EntityType {
   STUDENT = "STUDENT",
   ROOM = "ROOM",
+  BRANCH = "BRANCH",
   MAINTENANCE = "MAINTENANCE",
   FOOD_MENU = "FOOD_MENU",
   FOOD_ORDER = "FOOD_ORDER",
@@ -51,6 +52,18 @@ export interface Student {
   registrationDate: string;
   feesPaid: boolean;
   active: boolean;
+}
+
+export interface Branch {
+  PK: string; // BRANCH#branchId
+  SK: string; // BRANCH#branchId
+  entityType: EntityType.BRANCH;
+  branchId: string;
+  name: string;
+  description?: string;
+  capacity: number;
+  occupied: number;
+  createdAt: string;
 }
 
 export interface Room {

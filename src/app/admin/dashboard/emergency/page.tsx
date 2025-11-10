@@ -7,11 +7,11 @@ import DashboardLayout from "@/app/components/DashboardLayout";
 interface EmergencyContact {
   contactId: string;
   name: string;
-  category: "Medical" | "Security" | "Transport" | "Fire" | "Police" | "Other";
+  category: "medical" | "security" | "transport" | "other";
   phone: string;
   email?: string;
-  availability: "24/7" | "Working Hours" | "Emergency Only";
-  description?: string;
+  available247: boolean;
+  description: string;
 }
 
 export default function EmergencyContactsPage() {
@@ -22,15 +22,14 @@ export default function EmergencyContactsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
-    category: "Medical" as "Medical" | "Security" | "Transport" | "Fire" | "Police" | "Other",
+    category: "medical" as "medical" | "security" | "transport" | "other",
     phone: "",
     email: "",
-    availability: "24/7" as "24/7" | "Working Hours" | "Emergency Only",
+    available247: true,
     description: "",
   });
 
-  const categories = ["Medical", "Security", "Transport", "Fire", "Police", "Other"];
-  const availabilityOptions = ["24/7", "Working Hours", "Emergency Only"];
+  const categories = ["medical", "security", "transport", "other"];
 
   useEffect(() => {
     fetchContacts();
@@ -39,7 +38,7 @@ export default function EmergencyContactsPage() {
   const fetchContacts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/emergency-contacts", {
+      const response = await fetch("/api/admin/emergency", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -47,21 +46,21 @@ export default function EmergencyContactsPage() {
         const data = await response.json();
         setContacts(data.contacts || []);
       } else {
-        // Mock data for development
+        console.error("Failed to fetch contacts");
         setContacts([
           {
             contactId: "1",
             name: "City Hospital Emergency",
-            category: "Medical",
+            category: "medical",
             phone: "+91-9876543210",
             email: "emergency@cityhospital.com",
-            availability: "24/7",
+            available247: true,
             description: "Main city hospital with 24/7 emergency services",
           },
           {
             contactId: "2",
             name: "Campus Clinic",
-            category: "Medical",
+            category: "medical",
             phone: "+91-9876543211",
             email: "clinic@campus.edu",
             availability: "Working Hours",
@@ -72,7 +71,7 @@ export default function EmergencyContactsPage() {
             name: "Hostel Security Office",
             category: "Security",
             phone: "+91-9876543212",
-            availability: "24/7",
+            available247: true,
             description: "Main hostel security control room",
           },
           {
@@ -81,7 +80,7 @@ export default function EmergencyContactsPage() {
             category: "Security",
             phone: "+91-9876543213",
             email: "security@campus.edu",
-            availability: "24/7",
+            available247: true,
             description: "Campus-wide security services",
           },
           {
@@ -89,7 +88,7 @@ export default function EmergencyContactsPage() {
             name: "Fire Brigade",
             category: "Fire",
             phone: "101",
-            availability: "24/7",
+            available247: true,
             description: "Local fire department emergency number",
           },
           {
@@ -97,7 +96,7 @@ export default function EmergencyContactsPage() {
             name: "Police Control Room",
             category: "Police",
             phone: "100",
-            availability: "24/7",
+            available247: true,
             description: "Police emergency helpline",
           },
           {
@@ -112,9 +111,9 @@ export default function EmergencyContactsPage() {
           {
             contactId: "8",
             name: "Ambulance Service",
-            category: "Medical",
+            category: "medical",
             phone: "108",
-            availability: "24/7",
+            available247: true,
             description: "Emergency ambulance service",
           },
         ]);
@@ -131,17 +130,18 @@ export default function EmergencyContactsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = editingContact
-        ? `/api/admin/emergency-contacts/${editingContact.contactId}`
-        : "/api/admin/emergency-contacts";
 
-      const response = await fetch(url, {
-        method: editingContact ? "PUT" : "POST",
+      const body = editingContact
+        ? { contactId: editingContact.contactId, category: editingContact.category, updates: formData }
+        : formData;
+
+      const response = await fetch("/api/admin/emergency", {
+        method: editingContact ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -150,10 +150,10 @@ export default function EmergencyContactsPage() {
         setEditingContact(null);
         setFormData({
           name: "",
-          category: "Medical",
+          category: "medical",
           phone: "",
           email: "",
-          availability: "24/7",
+          available247: true,
           description: "",
         });
         fetchContacts();
@@ -181,10 +181,10 @@ export default function EmergencyContactsPage() {
         setEditingContact(null);
         setFormData({
           name: "",
-          category: "Medical",
+          category: "medical",
           phone: "",
           email: "",
-          availability: "24/7",
+          available247: true,
           description: "",
         });
       }
@@ -201,18 +201,18 @@ export default function EmergencyContactsPage() {
       category: contact.category,
       phone: contact.phone,
       email: contact.email || "",
-      availability: contact.availability,
+      available247: contact.available247,
       description: contact.description || "",
     });
     setShowAddModal(true);
   };
 
-  const handleDelete = async (contactId: string) => {
+  const handleDelete = async (contactId: string, category: string) => {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/emergency-contacts/${contactId}`, {
+      const response = await fetch(`/api/admin/emergency?contactId=${contactId}&category=${category}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -335,10 +335,10 @@ export default function EmergencyContactsPage() {
               setEditingContact(null);
               setFormData({
                 name: "",
-                category: "Medical",
+                category: "medical",
                 phone: "",
                 email: "",
-                availability: "24/7",
+                available247: true,
                 description: "",
               });
               setShowAddModal(true);
@@ -442,7 +442,7 @@ export default function EmergencyContactsPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(contact.contactId)}
+                          onClick={() => handleDelete(contact.contactId, contact.category)}
                           className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-2xl transition-all text-sm font-medium"
                         >
                           Delete
@@ -500,7 +500,7 @@ export default function EmergencyContactsPage() {
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
-                        {category}
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
                   </select>
@@ -528,19 +528,15 @@ export default function EmergencyContactsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Availability</label>
-                  <select
-                    value={formData.availability}
-                    onChange={(e) => setFormData({ ...formData, availability: e.target.value as any })}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-black/20"
-                    required
-                  >
-                    {availabilityOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.available247}
+                      onChange={(e) => setFormData({ ...formData, available247: e.target.checked })}
+                      className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-neutral-700">Available 24/7</span>
+                  </label>
                 </div>
 
                 <div>
