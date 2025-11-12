@@ -1,54 +1,45 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-export default function AdminLogin() {
-  const router = useRouter();
+export default function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
+      const MOCK_PASSWORD = "adminpassword";
 
-      const data = await response.json();
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
 
-      if (!response.ok) {
-        setError(data.error || "Login failed");
-        setLoading(false);
-        return;
+      if (password === MOCK_PASSWORD) {
+        console.log("Admin login successful!");
+        
+        window.alert("Login Successful! You are now logged in as Admin.");
+        
+        setPassword(""); 
+
+      } else {
+        setError("Invalid Admin Password. Please try again.");
       }
 
-      // Store token
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userType", "admin");
-
-      // Redirect to admin dashboard
-      router.push("/admin/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 text-white font-sans">
+      <div className="max-w-md w-full space-y-8 bg-gray-900 p-10 rounded-xl shadow-[0_0_40px_rgba(252,211,77,0.3)] border border-yellow-900/50 transition-all duration-300 hover:shadow-[0_0_50px_rgba(252,211,77,0.5)]">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-purple-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto h-14 w-14 bg-yellow-400 rounded-full flex items-center justify-center shadow-2xl shadow-yellow-500/30">
             <svg
-              className="h-6 w-6 text-white"
+              className="h-8 w-8 text-gray-900"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -59,11 +50,11 @@ export default function AdminLogin() {
               <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-8 text-3xl font-extrabold text-yellow-400 tracking-wider">
             Admin Login
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Access the hostel management dashboard
+          <p className="mt-2 text-sm text-gray-400">
+            Access the secure management dashboard.
           </p>
         </div>
 
@@ -71,7 +62,7 @@ export default function AdminLogin() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-100 mb-1"
             >
               Admin Password
             </label>
@@ -80,15 +71,15 @@ export default function AdminLogin() {
               name="password"
               type="password"
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-              placeholder="Enter admin password"
+              className="mt-1 block w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg shadow-inner text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition duration-200"
+              placeholder="Enter admin password (Hint: adminpassword)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded">
+            <div className="text-red-400 text-sm text-center bg-red-900/30 border border-red-800 p-3 rounded-lg shadow-md transition-opacity duration-300">
               {error}
             </div>
           )}
@@ -96,18 +87,24 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-base font-bold text-gray-900 bg-yellow-400 hover:bg-yellow-300 active:bg-yellow-500 transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Signing in..." : "Sign in as Admin"}
+            {loading ? (
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : "Sign in as Admin"}
           </button>
 
-          <div className="text-center">
-            <Link
-              href="/"
-              className="text-sm text-gray-600 hover:text-gray-900"
+          <div className="text-center pt-2">
+            <a
+              href="#"
+              className="text-sm text-yellow-400 hover:text-yellow-300 underline-offset-4 hover:underline transition duration-150"
+              onClick={(e) => { e.preventDefault(); alert("Going back to home page..."); }}
             >
               Back to home
-            </Link>
+            </a>
           </div>
         </form>
       </div>
