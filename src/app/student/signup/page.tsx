@@ -73,8 +73,8 @@ export default function StudentSignup() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Student Signup</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-4xl font-bold text-gray-900">Student Signup</h2>
+          <p className="mt-2 text-sm text-grey-700">
             Create your hostel account
           </p>
         </div>
