@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { motion } from "framer-motion";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-neutral-50 transition-colors duration-500">
