@@ -11,7 +11,7 @@ export function generateOrganizationSchema() {
     "name": "Sabaragamuwa University of Sri Lanka",
     "alternateName": "SUSL",
     "url": "https://www.sab.ac.lk",
-    "logo": `${BASE_URL}/logo.png`,
+    "logo": `${BASE_URL}/campus.jpeg`,
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+94-45-2280047",
@@ -69,7 +69,7 @@ export function generateSoftwareAppSchema() {
       "Attendance Tracking",
       "Emergency Alerts"
     ],
-    "screenshot": `${BASE_URL}/screenshot.png`,
+    "screenshot": `${BASE_URL}/campus.jpeg`,
     "provider": {
       "@type": "Organization",
       "name": "SPACE SOLUTIONS INTERNATIONAL (PVT) LTD"

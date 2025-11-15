@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
       name: name,
       email: email,
       phone: phone,
+      branch: "Default",
+      roomNumber: "Default",
       registrationDate: new Date().toISOString(),
       feesPaid: false,
       active: true,

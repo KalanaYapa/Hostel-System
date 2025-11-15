@@ -5,7 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // POST: Submit a new late pass request
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     const payload = verifyToken(token);
 
     if (!payload || payload.type !== "student") {
@@ -78,7 +84,13 @@ export async function POST(request: NextRequest) {
 // GET: Fetch all late pass requests for the logged-in student
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     const payload = verifyToken(token);
 
     if (!payload || payload.type !== "student") {

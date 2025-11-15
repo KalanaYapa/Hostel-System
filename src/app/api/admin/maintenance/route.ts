@@ -5,7 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // Get all maintenance requests
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -30,7 +36,13 @@ export async function GET(request: NextRequest) {
 // Update maintenance request status
 export async function PATCH(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -51,10 +51,10 @@ export const metadata: Metadata = {
     description: 'Comprehensive hostel management solution for Sabaragamuwa University students. Manage room bookings, fees, maintenance, and more.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/campus.jpeg',
         width: 1200,
         height: 630,
-        alt: 'Sabaragamuwa University Hostel Management System',
+        alt: 'Sabaragamuwa University Campus',
       },
     ],
   },
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SUSL Hostel Management System',
     description: 'Official hostel management portal for Sabaragamuwa University of Sri Lanka students.',
-    images: ['/og-image.png'],
+    images: ['/campus.jpeg'],
   },
   alternates: {
     canonical: 'https://yourdomain.com/',
@@ -83,9 +83,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
         <meta name="geo.region" content="LK-SAB" />
         <meta name="geo.placename" content="Belihuloya, Sri Lanka" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/campus.jpeg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/campus.jpeg" />
+        <link rel="shortcut icon" href="/campus.jpeg" type="image/jpeg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
