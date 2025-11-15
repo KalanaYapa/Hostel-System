@@ -408,6 +408,16 @@ export const toastMessages = {
 
   // General
   general: {
+    success: (message: string, description?: string) =>
+      toast.success(
+        message,
+        description ? { description } : undefined
+      ),
+    error: (message: string, description?: string) =>
+      toast.error(
+        message,
+        description ? { description } : undefined
+      ),
     saveSuccess: () =>
       toast.success(
         "Changes Saved",

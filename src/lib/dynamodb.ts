@@ -33,6 +33,8 @@ export enum EntityType {
   PAYMENT = "PAYMENT",
   ATTENDANCE = "ATTENDANCE",
   LATE_PASS = "LATE_PASS",
+  OTP = "OTP",
+  PENDING_STUDENT = "PENDING_STUDENT",
 }
 
 // Single Table Design Structure:
@@ -188,6 +190,29 @@ export interface LatePassRequest {
   createdAt: string;
   approvedAt?: string;
   approvedBy?: string; // Admin who approved/rejected
+}
+
+export interface OTPVerification {
+  PK: string; // OTP#email
+  SK: string; // OTP#email
+  entityType: EntityType.OTP;
+  email: string;
+  otp: string;
+  createdAt: string;
+  verified: boolean;
+  attempts: number; // Track failed verification attempts
+}
+
+export interface PendingStudent {
+  PK: string; // PENDING_STUDENT#email
+  SK: string; // PENDING_STUDENT#email
+  entityType: EntityType.PENDING_STUDENT;
+  studentId: string;
+  password: string; // hashed
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
 }
 
 // Helper functions

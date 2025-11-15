@@ -95,7 +95,9 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="mt-16"
           >
-           
+            <p className="text-neutral-500 text-sm font-light">
+              © {new Date().getFullYear()} SPACE SOLUTIONS INTERNATIONAL (PVT) LTD. All rights reserved.
+            </p>
           </motion.div>
         </div>
       </div>
