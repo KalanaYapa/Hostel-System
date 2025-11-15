@@ -13,8 +13,14 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-
-            
+            <h1 className="text-5xl md:text-7xl font-light tracking-tight text-neutral-900 mb-6">
+              Hostel Management
+            </h1>
+            <p className="text-xl md:text-2xl text-neutral-600 font-light mb-16">
+              Modern hostel operations at your fingertips
+            </p>
+          </motion.div>
+          
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Student Portal */}
             <motion.div
