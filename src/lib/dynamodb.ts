@@ -93,6 +93,7 @@ export interface MaintenanceRequest {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
+  adminNotes?: string;
 }
 
 export interface FoodMenuItem {

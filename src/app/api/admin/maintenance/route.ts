@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { requestId, studentId, status } = body;
+    const { requestId, studentId, status, adminNotes } = body;
 
     if (!requestId || !studentId || !status) {
       return NextResponse.json(
@@ -54,6 +54,10 @@ export async function PATCH(request: NextRequest) {
       status,
       updatedAt: new Date().toISOString(),
     };
+
+    if (adminNotes) {
+      updates.adminNotes = adminNotes;
+    }
 
     if (status === "completed") {
       updates.resolvedAt = new Date().toISOString();

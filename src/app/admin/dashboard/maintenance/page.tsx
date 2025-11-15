@@ -126,16 +126,21 @@ export default function MaintenancePage() {
     }
   };
 
-  const handleUpdateStatus = async (requestId: string, status: string, notes: string) => {
+  const handleUpdateStatus = async (requestId: string, studentId: string, status: string, notes: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/maintenance/${requestId}`, {
-        method: "PUT",
+      const response = await fetch("/api/admin/maintenance", {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status, adminNotes: notes }),
+        body: JSON.stringify({
+          requestId,
+          studentId,
+          status,
+          adminNotes: notes
+        }),
       });
 
       if (response.ok) {
@@ -144,15 +149,8 @@ export default function MaintenancePage() {
         setSelectedRequest(null);
         fetchRequests();
       } else {
-        // Update mock data
-        setRequests(requests.map(req =>
-          req.requestId === requestId
-            ? { ...req, status: status as any, adminNotes: notes, updatedAt: new Date().toISOString() }
-            : req
-        ));
-        alert("Request updated successfully!");
-        setShowDetailModal(false);
-        setSelectedRequest(null);
+        const error = await response.json();
+        alert(`Failed to update request: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -446,7 +444,7 @@ export default function MaintenancePage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleUpdateStatus(selectedRequest.requestId, newStatus, adminNotes)}
+                  onClick={() => handleUpdateStatus(selectedRequest.requestId, selectedRequest.studentId, newStatus, adminNotes)}
                   className="flex-1 px-4 py-3 bg-gradient-to-br from-blue-500 to-purple-500 text-white rounded-2xl hover:shadow-lg transition-all font-medium"
                 >
                   Update Request

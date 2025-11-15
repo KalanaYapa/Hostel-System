@@ -134,7 +134,7 @@ export default function LatePassPage() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout type="student">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -170,7 +170,7 @@ export default function LatePassPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8 bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+              className="mb-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-neutral-200/50 relative"
             >
               <h2 className="text-2xl font-bold text-neutral-800 mb-6">
                 Submit Late Pass Request
@@ -178,7 +178,7 @@ export default function LatePassPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Date */}
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-neutral-700 mb-2">
                       Date <span className="text-red-500">*</span>
                     </label>
@@ -193,12 +193,12 @@ export default function LatePassPage() {
                       }
                       min={new Date().toISOString().split("T")[0]}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white relative z-10"
                     />
                   </div>
 
                   {/* Reason */}
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-neutral-700 mb-2">
                       Reason <span className="text-red-500">*</span>
                     </label>
@@ -208,7 +208,7 @@ export default function LatePassPage() {
                         setFormData({ ...formData, reason: e.target.value })
                       }
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white relative z-10"
                     >
                       <option value="">Select Reason</option>
                       <option value="personal">Personal</option>
@@ -220,7 +220,7 @@ export default function LatePassPage() {
                   </div>
 
                   {/* Start Time */}
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-neutral-700 mb-2">
                       Departure Time <span className="text-red-500">*</span>
                     </label>
@@ -231,12 +231,12 @@ export default function LatePassPage() {
                         setFormData({ ...formData, startTime: e.target.value })
                       }
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white relative z-10"
                     />
                   </div>
 
                   {/* End Time */}
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-neutral-700 mb-2">
                       Expected Return Time <span className="text-red-500">*</span>
                     </label>
@@ -247,13 +247,13 @@ export default function LatePassPage() {
                         setFormData({ ...formData, endTime: e.target.value })
                       }
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50"
+                      className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white relative z-10"
                     />
                   </div>
                 </div>
 
                 {/* Description */}
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-semibold text-neutral-700 mb-2">
                     Description <span className="text-red-500">*</span>
                   </label>
@@ -265,7 +265,7 @@ export default function LatePassPage() {
                     rows={4}
                     required
                     placeholder="Please provide detailed reason for late return..."
-                    className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/50 resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white resize-none relative z-10"
                   />
                 </div>
 

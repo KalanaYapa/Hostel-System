@@ -178,7 +178,7 @@ export default function AdminLatePassPage() {
   ).filter(Boolean);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout type="admin">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
