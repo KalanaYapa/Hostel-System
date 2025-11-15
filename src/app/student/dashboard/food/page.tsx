@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface FoodMenuItem {
   menuId: string;
@@ -55,9 +56,12 @@ export default function FoodPage() {
         const data = await response.json();
         setMenu(data.menu || []);
         setOrders(data.orders || []);
+      } else {
+        toastMessages.food.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      toastMessages.food.fetchError();
     } finally {
       setLoading(false);
     }
@@ -100,7 +104,7 @@ export default function FoodPage() {
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      toastMessages.general.validationError("Your cart is empty!");
       return;
     }
 
@@ -118,16 +122,16 @@ export default function FoodPage() {
       });
 
       if (response.ok) {
-        alert("Order placed successfully!");
+        toastMessages.food.orderSuccess();
         setCart([]);
         fetchData();
         setActiveTab("orders");
       } else {
-        alert("Failed to place order. Please try again.");
+        toastMessages.food.orderError();
       }
     } catch (error) {
       console.error("Order error:", error);
-      alert("Failed to place order. Please try again.");
+      toastMessages.food.orderError();
     } finally {
       setOrdering(false);
     }

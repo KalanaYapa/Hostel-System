@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface MaintenanceRequest {
   requestId: string;
@@ -144,17 +145,17 @@ export default function MaintenancePage() {
       });
 
       if (response.ok) {
-        alert("Request updated successfully!");
+        toastMessages.maintenance.updateSuccess(status);
         setShowDetailModal(false);
         setSelectedRequest(null);
         fetchRequests();
       } else {
         const error = await response.json();
-        alert(`Failed to update request: ${error.error || 'Unknown error'}`);
+        toastMessages.maintenance.updateError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to update request");
+      toastMessages.maintenance.updateError();
     }
   };
 

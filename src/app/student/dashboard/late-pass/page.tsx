@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface LatePassRequest {
   requestId: string;
@@ -52,7 +53,7 @@ export default function LatePassPage() {
       setRequests(data.requests || []);
     } catch (error) {
       console.error("Error fetching requests:", error);
-      toast.error("Failed to load late pass requests");
+      toastMessages.latePass.fetchError();
     } finally {
       setLoading(false);
     }
@@ -75,10 +76,11 @@ export default function LatePassPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to submit request");
+        toastMessages.latePass.createError(error.error);
+        return;
       }
 
-      toast.success("Late pass request submitted successfully!");
+      toastMessages.latePass.createSuccess();
       setFormData({
         requestedDate: "",
         startTime: "",
@@ -90,7 +92,7 @@ export default function LatePassPage() {
       fetchRequests();
     } catch (error: any) {
       console.error("Error submitting request:", error);
-      toast.error(error.message || "Failed to submit request");
+      toastMessages.latePass.createError(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -234,10 +236,10 @@ export default function LatePassPage() {
 
       // Save the PDF
       doc.save(`Late_Pass_${request.requestId}.pdf`);
-      toast.success("PDF downloaded successfully!");
+      toastMessages.latePass.downloadSuccess();
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF");
+      toastMessages.latePass.downloadError();
     }
   };
 

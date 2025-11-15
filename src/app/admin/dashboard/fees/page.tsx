@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface FeeConfiguration {
   year: string;
@@ -67,7 +68,11 @@ export default function AdminFeesPage() {
       });
 
       if (response.ok) {
-        alert(editingYear ? "Fee configuration updated!" : "Fee configuration created!");
+        if (editingYear) {
+          toastMessages.fees.updateSuccess(editingYear);
+        } else {
+          toastMessages.general.saveSuccess();
+        }
         setShowForm(false);
         setEditingYear(null);
         setFormData({
@@ -79,11 +84,11 @@ export default function AdminFeesPage() {
         });
         fetchFeeConfigurations();
       } else {
-        alert("Failed to save fee configuration");
+        toastMessages.fees.updateError();
       }
     } catch (error) {
       console.error("Submit error:", error);
-      alert("Failed to save fee configuration");
+      toastMessages.fees.updateError();
     }
   };
 
@@ -114,14 +119,14 @@ export default function AdminFeesPage() {
       });
 
       if (response.ok) {
-        alert("Fee configuration deleted!");
+        toastMessages.general.saveSuccess();
         fetchFeeConfigurations();
       } else {
-        alert("Failed to delete fee configuration");
+        toastMessages.fees.updateError();
       }
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Failed to delete fee configuration");
+      toastMessages.fees.updateError();
     }
   };
 

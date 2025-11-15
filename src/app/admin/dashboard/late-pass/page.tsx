@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
-import { toast } from "sonner";
+import { toastMessages } from "@/lib/toast-messages";
 import jsPDF from "jspdf";
 
 interface LatePassRequest {
@@ -63,7 +63,7 @@ export default function AdminLatePassPage() {
       setRequests(data.requests || []);
     } catch (error) {
       console.error("Error fetching requests:", error);
-      toast.error("Failed to load late pass requests");
+      toastMessages.latePass.fetchError();
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,13 @@ export default function AdminLatePassPage() {
         throw new Error(error.error || "Failed to update request");
       }
 
-      toast.success("Late pass request updated successfully!");
+      if (newStatus === "approved") {
+        toastMessages.latePass.approveSuccess(selectedRequest?.studentName);
+      } else if (newStatus === "rejected") {
+        toastMessages.latePass.rejectSuccess(selectedRequest?.studentName);
+      } else {
+        toastMessages.latePass.updateSuccess?.(newStatus) || toastMessages.general.saveSuccess();
+      }
       setShowDetailModal(false);
       setSelectedRequest(null);
       setNewStatus("");
@@ -116,7 +122,7 @@ export default function AdminLatePassPage() {
       fetchRequests();
     } catch (error: any) {
       console.error("Error updating request:", error);
-      toast.error(error.message || "Failed to update request");
+      toastMessages.latePass.updateError();
     } finally {
       setUpdating(false);
     }
@@ -263,10 +269,10 @@ export default function AdminLatePassPage() {
 
       // Save the PDF
       doc.save(`Late_Pass_${request.studentId}_${request.requestId}.pdf`);
-      toast.success("PDF downloaded successfully!");
+      toastMessages.latePass.downloadSuccess();
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF");
+      toastMessages.latePass.downloadError();
     }
   };
 

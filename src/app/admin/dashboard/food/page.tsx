@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface MenuItem {
   menuId: string;
@@ -180,7 +181,11 @@ export default function FoodMenuPage() {
       });
 
       if (response.ok) {
-        alert(editingItem ? "Menu item updated!" : "Menu item added!");
+        if (editingItem) {
+          toastMessages.food.menuUpdateSuccess(formData.name);
+        } else {
+          toastMessages.food.menuCreateSuccess(formData.name);
+        }
         setShowAddModal(false);
         setEditingItem(null);
         setFormData({
@@ -201,6 +206,7 @@ export default function FoodMenuPage() {
                 : item
             )
           );
+          toastMessages.food.menuUpdateSuccess(formData.name);
         } else {
           setMenuItems([
             ...menuItems,
@@ -209,8 +215,8 @@ export default function FoodMenuPage() {
               ...formData,
             },
           ]);
+          toastMessages.food.menuCreateSuccess(formData.name);
         }
-        alert(editingItem ? "Menu item updated!" : "Menu item added!");
         setShowAddModal(false);
         setEditingItem(null);
         setFormData({
@@ -223,7 +229,7 @@ export default function FoodMenuPage() {
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save menu item");
+      toastMessages.food.menuCreateError();
     }
   };
 
@@ -244,22 +250,23 @@ export default function FoodMenuPage() {
 
     try {
       const token = localStorage.getItem("token");
+      const item = menuItems.find(i => i.menuId === menuId);
       const response = await fetch(`/api/admin/food?menuId=${menuId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Item deleted successfully!");
+        toastMessages.food.menuDeleteSuccess(item?.name);
         fetchMenuItems();
       } else {
         // Update mock data
         setMenuItems(menuItems.filter((item) => item.menuId !== menuId));
-        alert("Item deleted successfully!");
+        toastMessages.food.menuDeleteSuccess(item?.name);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete item");
+      toastMessages.food.menuDeleteError();
     }
   };
 
@@ -306,15 +313,15 @@ export default function FoodMenuPage() {
       });
 
       if (response.ok) {
-        alert("Order status updated!");
+        toastMessages.food.statusUpdateSuccess(newStatus);
         fetchMenuItems();
         setSelectedOrder(null);
       } else {
-        alert("Failed to update order status");
+        toastMessages.food.statusUpdateError();
       }
     } catch (error) {
       console.error("Error updating order:", error);
-      alert("Failed to update order status");
+      toastMessages.food.statusUpdateError();
     }
   };
 

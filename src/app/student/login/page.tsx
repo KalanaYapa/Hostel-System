@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import rateLimiter from "@/lib/rateLimit";
+import { toastMessages } from "@/lib/toast-messages";
 
 export default function StudentLogin() {
   const router = useRouter();
@@ -91,14 +92,14 @@ export default function StudentLogin() {
 
         if (result.locked && result.lockoutTime) {
           const minutes = Math.floor(result.lockoutTime / 60);
-          setError(
-            `Too many failed login attempts. Account locked for ${minutes} minutes.`
-          );
+          const errorMsg = `Too many failed login attempts. Account locked for ${minutes} minutes.`;
+          setError(errorMsg);
           setRemainingTime(result.lockoutTime);
+          toastMessages.auth.rateLimited(`${minutes} minutes`);
         } else {
-          setError(
-            `${data.error || "Invalid credentials"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`
-          );
+          const errorMsg = `${data.error || "Invalid credentials"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
+          setError(errorMsg);
+          toastMessages.auth.loginError(errorMsg);
         }
         setLoading(false);
         return;
@@ -112,10 +113,15 @@ export default function StudentLogin() {
       localStorage.setItem("userType", "student");
       localStorage.setItem("studentData", JSON.stringify(data.student));
 
+      // Show success toast
+      toastMessages.auth.loginSuccess("student", data.student?.name);
+
       // Redirect to student dashboard
       router.push("/student/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toastMessages.general.networkError();
       setLoading(false);
     }
   };

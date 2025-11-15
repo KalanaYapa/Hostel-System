@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toastMessages } from "@/lib/toast-messages";
 
 export default function StudentSignup() {
   const router = useRouter();
@@ -23,13 +24,17 @@ export default function StudentSignup() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      const errorMsg = "Passwords do not match";
+      setError(errorMsg);
+      toastMessages.general.validationError(errorMsg);
       return;
     }
 
     // Validate password strength
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      const errorMsg = "Password must be at least 6 characters long";
+      setError(errorMsg);
+      toastMessages.general.validationError(errorMsg);
       return;
     }
 
@@ -51,7 +56,9 @@ export default function StudentSignup() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Signup failed");
+        const errorMsg = data.error || "Signup failed";
+        setError(errorMsg);
+        toastMessages.auth.signupError(errorMsg);
         setLoading(false);
         return;
       }
@@ -61,10 +68,15 @@ export default function StudentSignup() {
       localStorage.setItem("userType", "student");
       localStorage.setItem("studentData", JSON.stringify(data.student));
 
+      // Show success toast
+      toastMessages.auth.signupSuccess();
+
       // Redirect to student dashboard
       router.push("/student/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toastMessages.general.networkError();
       setLoading(false);
     }
   };

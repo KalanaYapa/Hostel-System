@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface EmergencyContact {
   contactId: string;
@@ -38,9 +39,12 @@ export default function EmergencyPage() {
         const data = await response.json();
         setContacts(data.contacts || []);
         setGrouped(data.grouped || {});
+      } else {
+        toastMessages.emergency.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch contacts:", error);
+      toastMessages.emergency.fetchError();
     } finally {
       setLoading(false);
     }

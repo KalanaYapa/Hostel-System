@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import rateLimiter from "@/lib/rateLimit";
+import { toastMessages } from "@/lib/toast-messages";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -88,14 +89,14 @@ export default function AdminLogin() {
 
         if (result.locked && result.lockoutTime) {
           const minutes = Math.floor(result.lockoutTime / 60);
-          setError(
-            `Too many failed login attempts. Account locked for ${minutes} minutes.`
-          );
+          const errorMsg = `Too many failed login attempts. Account locked for ${minutes} minutes.`;
+          setError(errorMsg);
           setRemainingTime(result.lockoutTime);
+          toastMessages.auth.rateLimited(`${minutes} minutes`);
         } else {
-          setError(
-            `${data.error || "Invalid password"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`
-          );
+          const errorMsg = `${data.error || "Invalid password"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
+          setError(errorMsg);
+          toastMessages.auth.loginError(errorMsg);
         }
         setLoading(false);
         return;
@@ -108,10 +109,15 @@ export default function AdminLogin() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userType", "admin");
 
+      // Show success toast
+      toastMessages.auth.loginSuccess("admin");
+
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toastMessages.general.networkError();
       setLoading(false);
     }
   };

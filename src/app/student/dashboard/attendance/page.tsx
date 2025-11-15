@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface AttendanceRecord {
   date: string;
@@ -50,9 +51,12 @@ export default function AttendancePage() {
           (a: AttendanceRecord) => a.date === today
         );
         setTodayMarked(!!todayRecord);
+      } else {
+        toastMessages.attendance.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch attendance:", error);
+      toastMessages.attendance.fetchError();
     } finally {
       setLoading(false);
     }
@@ -73,15 +77,15 @@ export default function AttendancePage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Attendance marked successfully!");
+        toastMessages.attendance.markSuccess();
         setTodayMarked(true);
         fetchAttendance();
       } else {
-        alert(data.error || "Failed to mark attendance");
+        toastMessages.attendance.markError();
       }
     } catch (error) {
       console.error("Mark attendance error:", error);
-      alert("Failed to mark attendance. Please try again.");
+      toastMessages.attendance.markError();
     } finally {
       setMarking(false);
     }

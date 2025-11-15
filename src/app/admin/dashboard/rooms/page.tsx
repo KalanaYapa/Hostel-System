@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Branch {
   branchId: string;
@@ -118,18 +119,22 @@ export default function RoomsPage() {
       });
 
       if (response.ok) {
-        alert(editingBranch ? "Branch updated successfully!" : "Branch added successfully!");
+        if (editingBranch) {
+          toastMessages.branches.updateSuccess(branchFormData.name);
+        } else {
+          toastMessages.branches.createSuccess(branchFormData.name);
+        }
         setShowAddModal(false);
         setEditingBranch(null);
         setBranchFormData({ name: "", description: "", capacity: 0 });
         fetchBranches();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to save branch");
+        toastMessages.branches.createError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save branch");
+      toastMessages.branches.createError();
     }
   };
 
@@ -138,21 +143,22 @@ export default function RoomsPage() {
 
     try {
       const token = localStorage.getItem("token");
+      const branch = branches.find(b => b.branchId === branchId);
       const response = await fetch(`/api/admin/branches?branchId=${branchId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Branch deleted successfully!");
+        toastMessages.branches.deleteSuccess(branch?.name);
         fetchBranches();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete branch");
+        toastMessages.branches.deleteError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete branch");
+      toastMessages.branches.deleteError();
     }
   };
 
@@ -180,18 +186,22 @@ export default function RoomsPage() {
       });
 
       if (response.ok) {
-        alert(editingRoom ? "Room updated successfully!" : "Room added successfully!");
+        if (editingRoom) {
+          toastMessages.rooms.updateSuccess(formData.roomNumber);
+        } else {
+          toastMessages.rooms.createSuccess(formData.roomNumber);
+        }
         setShowAddRoomModal(false);
         setEditingRoom(null);
         setFormData({ roomNumber: "", branch: "", capacity: 2, floor: 1, type: "double" });
         fetchRooms();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to save room");
+        toastMessages.rooms.createError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save room");
+      toastMessages.rooms.createError();
     }
   };
 
@@ -228,15 +238,15 @@ export default function RoomsPage() {
       });
 
       if (response.ok) {
-        alert("Room deleted successfully!");
+        toastMessages.rooms.deleteSuccess(roomNumber);
         fetchRooms();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete room");
+        toastMessages.rooms.deleteError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete room");
+      toastMessages.rooms.deleteError();
     }
   };
 

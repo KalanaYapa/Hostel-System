@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     // Create response with student data
     const response = NextResponse.json({
       message: "Login successful",
+      token: token,
       student: {
         studentId: student.studentId,
         name: student.name,

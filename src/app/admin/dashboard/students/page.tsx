@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Student {
   studentId: string;
@@ -64,9 +65,15 @@ export default function StudentsManagementPage() {
       if (response.ok) {
         const data = await response.json();
         setStudents(data.students || []);
+        if (data.students && data.students.length > 0) {
+          toastMessages.students.fetchSuccess();
+        }
+      } else {
+        toastMessages.students.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch students:", error);
+      toastMessages.students.fetchError();
     } finally {
       setLoading(false);
     }
@@ -134,19 +141,20 @@ export default function StudentsManagementPage() {
       });
 
       if (response.ok) {
-        alert("Student updated successfully!");
+        toastMessages.students.updateSuccess(editingStudent.name);
         setEditingStudent(null);
         fetchStudents();
       } else {
-        alert("Failed to update student");
+        toastMessages.students.updateError();
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Failed to update student");
+      toastMessages.students.updateError();
     }
   };
 
   const handleDeactivate = async (studentId: string) => {
+    const student = students.find(s => s.studentId === studentId);
     if (!confirm("Are you sure you want to deactivate this student?")) {
       return;
     }
@@ -164,14 +172,14 @@ export default function StudentsManagementPage() {
       );
 
       if (response.ok) {
-        alert("Student deactivated successfully!");
+        toastMessages.students.deleteSuccess(student?.name);
         fetchStudents();
       } else {
-        alert("Failed to deactivate student");
+        toastMessages.students.deleteError();
       }
     } catch (error) {
       console.error("Deactivate error:", error);
-      alert("Failed to deactivate student");
+      toastMessages.students.deleteError();
     }
   };
 

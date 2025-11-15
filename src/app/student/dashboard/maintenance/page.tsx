@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface MaintenanceRequest {
   requestId: string;
@@ -42,9 +43,12 @@ export default function MaintenancePage() {
       if (response.ok) {
         const data = await response.json();
         setRequests(data.requests || []);
+      } else {
+        toastMessages.maintenance.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch requests:", error);
+      toastMessages.maintenance.fetchError();
     } finally {
       setLoading(false);
     }
@@ -68,16 +72,16 @@ export default function MaintenancePage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Maintenance request submitted successfully!");
+        toastMessages.maintenance.createSuccess();
         setFormData({ issue: "", description: "" });
         setShowForm(false);
         fetchRequests();
       } else {
-        alert(data.error || "Failed to submit request");
+        toastMessages.maintenance.createError();
       }
     } catch (error) {
       console.error("Submit error:", error);
-      alert("Failed to submit request. Please try again.");
+      toastMessages.maintenance.createError();
     } finally {
       setSubmitting(false);
     }

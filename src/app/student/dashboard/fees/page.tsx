@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Payment {
   paymentId: string;
@@ -40,9 +41,12 @@ export default function FeesPage() {
       if (response.ok) {
         const data = await response.json();
         setPayments(data.payments || []);
+      } else {
+        toastMessages.fees.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch payments:", error);
+      toastMessages.fees.fetchError();
     } finally {
       setLoading(false);
     }
@@ -67,7 +71,7 @@ export default function FeesPage() {
       });
 
       if (response.ok) {
-        alert("Payment successful!");
+        toastMessages.fees.paymentSuccess();
         setFeesPaid(true);
 
         const studentData = localStorage.getItem("studentData");
@@ -79,11 +83,11 @@ export default function FeesPage() {
 
         fetchPayments();
       } else {
-        alert("Payment failed. Please try again.");
+        toastMessages.fees.paymentError();
       }
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Payment failed. Please try again.");
+      toastMessages.fees.paymentError();
     } finally {
       setPaying(false);
     }

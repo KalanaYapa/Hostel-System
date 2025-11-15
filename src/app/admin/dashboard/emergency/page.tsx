@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface EmergencyContact {
   contactId: string;
@@ -77,7 +78,11 @@ export default function EmergencyContactsPage() {
       });
 
       if (response.ok) {
-        alert(editingContact ? "Contact updated!" : "Contact added!");
+        if (editingContact) {
+          toastMessages.emergency.updateSuccess();
+        } else {
+          toastMessages.emergency.createSuccess();
+        }
         setShowAddModal(false);
         setEditingContact(null);
         setFormData({
@@ -91,11 +96,11 @@ export default function EmergencyContactsPage() {
         fetchContacts();
       } else {
         const errorData = await response.json();
-        alert(`Failed to save contact: ${errorData.error || 'Unknown error'}`);
+        toastMessages.emergency.createError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save contact");
+      toastMessages.emergency.createError();
     }
   };
 
@@ -123,15 +128,15 @@ export default function EmergencyContactsPage() {
       });
 
       if (response.ok) {
-        alert("Contact deleted successfully!");
+        toastMessages.emergency.deleteSuccess();
         fetchContacts();
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete contact: ${errorData.error || 'Unknown error'}`);
+        toastMessages.emergency.deleteError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete contact");
+      toastMessages.emergency.deleteError();
     }
   };
 
