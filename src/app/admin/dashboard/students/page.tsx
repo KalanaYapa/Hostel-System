@@ -262,13 +262,11 @@ export default function StudentsManagementPage() {
                         {student.branch ? (
                           branches.find(b => b.branchId === student.branch)?.name || student.branch
                         ) : (
-                          <span className="text-orange-600">Not Assigned</span>
+                          "Default"
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {student.roomNumber || (
-                          <span className="text-orange-600">Not Assigned</span>
-                        )}
+                        {student.roomNumber || "Default"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span

@@ -184,10 +184,10 @@ export const toastMessages = {
         "Request Submitted",
         { description: "Your maintenance request has been submitted successfully." }
       ),
-    createError: () =>
+    createError: (message?: string) =>
       toast.error(
         "Submission Failed",
-        { description: "Unable to submit your maintenance request. Please try again." }
+        { description: message || "Unable to submit your maintenance request. Please try again." }
       ),
     updateSuccess: (status: string) =>
       toast.success(

@@ -217,7 +217,7 @@ export default function AdminFeesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Hostel Fee (₹)
+                      Hostel Fee (RS)
                     </label>
                     <input
                       type="number"
@@ -234,7 +234,7 @@ export default function AdminFeesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Maintenance Fee (₹)
+                      Maintenance Fee (RS)
                     </label>
                     <input
                       type="number"
@@ -250,7 +250,7 @@ export default function AdminFeesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Security Deposit (₹)
+                      Security Deposit (RS)
                     </label>
                     <input
                       type="number"
@@ -266,7 +266,7 @@ export default function AdminFeesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Other Fees (₹)
+                      Other Fees (RS)
                     </label>
                     <input
                       type="number"
@@ -284,7 +284,7 @@ export default function AdminFeesPage() {
                     <div className="w-full p-4 bg-green-50 rounded-2xl border border-green-200">
                       <p className="text-sm text-neutral-600 mb-1">Total Fee</p>
                       <p className="text-3xl font-light text-green-600">
-                        ₹{calculateTotal().toLocaleString()}
+                        RS {calculateTotal().toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -372,31 +372,31 @@ export default function AdminFeesPage() {
                     <div className="bg-neutral-50 p-4 rounded-xl">
                       <p className="text-xs text-neutral-600 mb-1">Hostel Fee</p>
                       <p className="text-lg font-medium text-neutral-900">
-                        ₹{config.hostelFee.toLocaleString()}
+                        RS {config.hostelFee.toLocaleString()}
                       </p>
                     </div>
                     <div className="bg-neutral-50 p-4 rounded-xl">
                       <p className="text-xs text-neutral-600 mb-1">Maintenance</p>
                       <p className="text-lg font-medium text-neutral-900">
-                        ₹{config.maintenanceFee.toLocaleString()}
+                        RS {config.maintenanceFee.toLocaleString()}
                       </p>
                     </div>
                     <div className="bg-neutral-50 p-4 rounded-xl">
                       <p className="text-xs text-neutral-600 mb-1">Security</p>
                       <p className="text-lg font-medium text-neutral-900">
-                        ₹{config.securityDeposit.toLocaleString()}
+                        RS {config.securityDeposit.toLocaleString()}
                       </p>
                     </div>
                     <div className="bg-neutral-50 p-4 rounded-xl">
                       <p className="text-xs text-neutral-600 mb-1">Other Fees</p>
                       <p className="text-lg font-medium text-neutral-900">
-                        ₹{config.otherFees.toLocaleString()}
+                        RS {config.otherFees.toLocaleString()}
                       </p>
                     </div>
                     <div className="bg-green-50 p-4 rounded-xl border border-green-200">
                       <p className="text-xs text-green-600 mb-1 font-medium">Total Fee</p>
                       <p className="text-lg font-bold text-green-600">
-                        ₹{config.totalFee.toLocaleString()}
+                        RS {config.totalFee.toLocaleString()}
                       </p>
                     </div>
                   </div>

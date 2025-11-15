@@ -226,7 +226,7 @@ export default function FoodPage() {
                             </p>
                           </div>
                           <span className="text-lg font-bold text-green-600">
-                            ₹{item.price}
+                            RS{item.price}
                           </span>
                         </div>
                         <p className="text-sm text-gray-700 mb-3">
@@ -264,7 +264,7 @@ export default function FoodPage() {
                           <div className="flex-1">
                             <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-gray-600">
-                              ₹{item.price} each
+                              RS{item.price} each
                             </p>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -294,7 +294,7 @@ export default function FoodPage() {
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-semibold text-lg">Total:</span>
                         <span className="font-bold text-xl text-green-600">
-                          ₹{getTotalAmount()}
+                          RS{getTotalAmount()}
                         </span>
                       </div>
                       <button
@@ -353,7 +353,7 @@ export default function FoodPage() {
                           <span>
                             {item.name} x {item.quantity}
                           </span>
-                          <span>₹{item.price * item.quantity}</span>
+                          <span>RS{item.price * item.quantity}</span>
                         </div>
                       ))}
                     </div>
@@ -361,7 +361,7 @@ export default function FoodPage() {
                     <div className="border-t pt-2 flex justify-between items-center">
                       <span className="font-semibold">Total:</span>
                       <span className="font-bold text-lg text-green-600">
-                        ₹{order.totalAmount}
+                        RS{order.totalAmount}
                       </span>
                     </div>
                   </motion.div>

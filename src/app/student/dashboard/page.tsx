@@ -150,15 +150,11 @@ export default function StudentDashboard() {
               { label: "Phone", value: studentData.phone },
               {
                 label: "Branch",
-                value: studentData.branch || (
-                  <span className="text-orange-500">Not Assigned</span>
-                ),
+                value: studentData.branch || "Default",
               },
               {
                 label: "Room Number",
-                value: studentData.roomNumber || (
-                  <span className="text-orange-500">Not Assigned</span>
-                ),
+                value: studentData.roomNumber || "Default",
               },
               {
                 label: "Fee Status",

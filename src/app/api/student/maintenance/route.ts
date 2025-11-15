@@ -6,19 +6,25 @@ export async function POST(request: NextRequest) {
   try {
     // Verify authentication - try cookie first, then Authorization header
     let token = request.cookies.get("student_token")?.value;
+    console.log("Cookie token:", token ? "Present" : "Missing");
 
     if (!token) {
       token = request.headers.get("authorization")?.replace("Bearer ", "");
+      console.log("Authorization header token:", token ? "Present" : "Missing");
     }
 
     if (!token) {
+      console.log("No token found in cookies or headers");
       return NextResponse.json({
         error: "Authentication required. Please log in to continue."
       }, { status: 401 });
     }
 
     const payload = verifyToken(token);
+    console.log("Token payload:", payload);
+
     if (!payload || payload.type !== "student") {
+      console.log("Invalid payload or wrong type:", payload);
       return NextResponse.json({
         error: "Invalid authentication. Please log in again."
       }, { status: 401 });
@@ -53,26 +59,6 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Check if branch is assigned FIRST
-    if (!student.branch) {
-      return NextResponse.json({
-        error: "Please contact the hostel administrator to assign your branch before submitting maintenance requests.",
-        title: "Branch Not Assigned",
-        requiresBranchAssignment: true,
-        action: "Contact Administration"
-      }, { status: 400 });
-    }
-
-    // Check if room is assigned SECOND
-    if (!student.roomNumber) {
-      return NextResponse.json({
-        error: "Please contact the hostel administrator to assign your room before submitting maintenance requests.",
-        title: "Room Not Assigned",
-        requiresRoomAssignment: true,
-        action: "Contact Administration"
-      }, { status: 400 });
-    }
-
     // Create maintenance request
     const requestId = `REQ-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const maintenanceRequest: MaintenanceRequest = {
@@ -82,8 +68,8 @@ export async function POST(request: NextRequest) {
       requestId,
       studentId,
       studentName: student.name,
-      branch: student.branch,
-      roomNumber: student.roomNumber,
+      branch: student.branch || "Default",
+      roomNumber: student.roomNumber || "Default",
       issue,
       description,
       status: "pending",
@@ -99,8 +85,16 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Maintenance request error:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    });
     return NextResponse.json(
-      { error: "An unexpected error occurred while submitting your request. Please try again or contact support if the problem persists." },
+      {
+        error: "An unexpected error occurred while submitting your request. Please try again or contact support if the problem persists.",
+        details: process.env.NODE_ENV !== "production" ? (error instanceof Error ? error.message : String(error)) : undefined
+      },
       { status: 500 }
     );
   }

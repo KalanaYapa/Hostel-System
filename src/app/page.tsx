@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  // Structured data for SEO
+  // Structured data for SEO - using static values to prevent hydration mismatch
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -23,7 +23,7 @@ export default function Home() {
       {
         "@type": "WebSite",
         "name": "Sabaragamuwa University Hostel Management System",
-        "url": typeof window !== 'undefined' ? window.location.origin : "https://yourdomain.com"
+        "url": "https://www.sab.ac.lk"
       },
       {
         "@type": "SoftwareApplication",
@@ -146,7 +146,7 @@ export default function Home() {
             className="mt-16"
           >
             <p className="text-neutral-500 text-sm font-light">
-              © {new Date().getFullYear()} SPACE SOLUTIONS INTERNATIONAL (PVT) LTD. All rights reserved.
+              © 2025 SPACE SOLUTIONS INTERNATIONAL (PVT) LTD. All rights reserved.
             </p>
           </motion.div>
         </div>

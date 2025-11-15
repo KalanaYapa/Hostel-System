@@ -60,6 +60,9 @@ export default function MaintenancePage() {
 
     try {
       const token = localStorage.getItem("token");
+      console.log("Token from localStorage:", token ? "Present" : "Missing");
+      console.log("Form data:", formData);
+
       const response = await fetch("/api/student/maintenance", {
         method: "POST",
         headers: {
@@ -69,7 +72,23 @@ export default function MaintenancePage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError);
+        console.error("Raw response:", responseText);
+        toastMessages.maintenance.createError();
+        return;
+      }
+
+      console.log("Response data:", data);
 
       if (response.ok) {
         toastMessages.maintenance.createSuccess();
@@ -77,7 +96,10 @@ export default function MaintenancePage() {
         setShowForm(false);
         fetchRequests();
       } else {
-        toastMessages.maintenance.createError();
+        console.error("Request failed:", data);
+        console.error("Error message:", data.error);
+        console.error("Error details:", data.details);
+        toastMessages.maintenance.createError(data.error);
       }
     } catch (error) {
       console.error("Submit error:", error);

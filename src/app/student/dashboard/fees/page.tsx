@@ -122,18 +122,18 @@ export default function FeesPage() {
                 Amount
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-neutral-600 font-medium">₹</span>
+                <span className="absolute left-4 top-3.5 text-neutral-600 font-medium">RS</span>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 transition-all bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 transition-all bg-white"
                   required
                   min="1"
                 />
               </div>
               <p className="mt-2 text-sm text-neutral-500">
-                Standard hostel fee: ₹5,000 per semester
+                Standard hostel fee: RS 5,000 per semester
               </p>
             </div>
 
@@ -141,7 +141,7 @@ export default function FeesPage() {
               <h3 className="font-medium text-neutral-900 mb-3">Payment Details:</h3>
               <p className="text-sm text-neutral-600">Type: Hostel Fee</p>
               <p className="text-sm text-neutral-600">
-                Amount: ₹{amount || "0"}
+                Amount: RS {amount || "0"}
               </p>
             </div>
 
@@ -204,7 +204,7 @@ export default function FeesPage() {
                     </span>
                   </div>
                   <p className="text-2xl font-light text-neutral-900">
-                    ₹{payment.amount}
+                    RS {payment.amount}
                   </p>
                   <p className="text-xs text-neutral-400 mt-2">
                     ID: {payment.paymentId}
