@@ -14,10 +14,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-5xl md:text-7xl font-light tracking-tight text-neutral-900 mb-6">
-              Hostel Management
+              Hostel Management System
             </h1>
             <p className="text-xl md:text-2xl text-neutral-600 font-light mb-16">
-              Modern hostel operations at your fingertips
+              Sabaragamuwa University of Sri Lanka
             </p>
           </motion.div>
 
@@ -95,9 +95,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="mt-16"
           >
-            <p className="text-neutral-400 text-sm font-light">
-              Powered by Next.js, DynamoDB, and AWS
-            </p>
+           
           </motion.div>
         </div>
       </div>

@@ -47,6 +47,7 @@ coverage/
 # IDE files
 .vscode/
 .idea/
+.claude/
 
 # OS generated files
 .DS_Store
