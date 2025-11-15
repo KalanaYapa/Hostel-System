@@ -1,36 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminPassword, generateAdminToken, setAuthCookie } from "@/lib/auth";
-import { sanitizeString, validateRequestBody } from "@/lib/sanitize";
+import { adminLoginSchema } from "@/lib/schemas/auth";
+import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate request structure
-    validateRequestBody(body, ['password']);
+    // Validate and parse request body with Zod
+    const validationResult = adminLoginSchema.safeParse(body);
 
-    // Sanitize and validate password
-    let sanitizedPassword: string;
-
-    try {
-      sanitizedPassword = sanitizeString(body.password);
-
-      // Password length validation
-      if (sanitizedPassword.length < 6 || sanitizedPassword.length > 128) {
-        return NextResponse.json(
-          { error: "Invalid password" },
-          { status: 401 }
-        );
-      }
-    } catch (validationError: any) {
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => err.message).join(", ");
       return NextResponse.json(
-        { error: "Invalid input format" },
+        { error: `Validation failed: ${errors}` },
         { status: 400 }
       );
     }
 
-    // Verify admin password using sanitized input
-    const isValid = verifyAdminPassword(sanitizedPassword);
+    const { password } = validationResult.data;
+
+    // Verify admin password using validated input
+    const isValid = verifyAdminPassword(password);
     if (!isValid) {
       return NextResponse.json(
         { error: "Invalid admin password" },

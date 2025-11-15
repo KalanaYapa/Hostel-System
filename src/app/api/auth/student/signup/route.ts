@@ -1,68 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import db, { EntityType, Student } from "@/lib/dynamodb";
 import { hashPassword, generateStudentToken, setAuthCookie } from "@/lib/auth";
-import {
-  sanitizeStudentId,
-  sanitizeString,
-  sanitizeEmail,
-  sanitizePhoneNumber,
-  validateRequestBody,
-} from "@/lib/sanitize";
+import { studentSignupSchema } from "@/lib/schemas/auth";
+import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate request structure
-    validateRequestBody(body, ['studentId', 'password', 'name', 'email', 'phone']);
+    // Validate and parse request body with Zod
+    const validationResult = studentSignupSchema.safeParse(body);
 
-    // Sanitize and validate all inputs
-    let sanitizedStudentId: string;
-    let sanitizedPassword: string;
-    let sanitizedName: string;
-    let sanitizedEmail: string;
-    let sanitizedPhone: string;
-
-    try {
-      sanitizedStudentId = sanitizeStudentId(body.studentId);
-      sanitizedPassword = sanitizeString(body.password);
-      sanitizedName = sanitizeString(body.name);
-      sanitizedEmail = sanitizeEmail(body.email);
-      sanitizedPhone = sanitizePhoneNumber(body.phone);
-
-      // Password strength validation
-      if (sanitizedPassword.length < 6) {
-        return NextResponse.json(
-          { error: "Password must be at least 6 characters long" },
-          { status: 400 }
-        );
-      }
-
-      if (sanitizedPassword.length > 128) {
-        return NextResponse.json(
-          { error: "Password too long" },
-          { status: 400 }
-        );
-      }
-
-      // Name validation
-      if (sanitizedName.length < 2 || sanitizedName.length > 100) {
-        return NextResponse.json(
-          { error: "Name must be between 2 and 100 characters" },
-          { status: 400 }
-        );
-      }
-    } catch (validationError: any) {
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => err.message).join(", ");
       return NextResponse.json(
-        { error: validationError.message || "Invalid input format" },
+        { error: `Validation failed: ${errors}` },
         { status: 400 }
       );
     }
 
-    // Check if student already exists using sanitized input
+    const { studentId, password, name, email, phone } = validationResult.data;
+
+    // Check if student already exists using validated input
     const existingStudent = await db.get(
-      `${EntityType.STUDENT}#${sanitizedStudentId}`,
-      `${EntityType.STUDENT}#${sanitizedStudentId}`
+      `${EntityType.STUDENT}#${studentId}`,
+      `${EntityType.STUDENT}#${studentId}`
     );
 
     if (existingStudent) {
@@ -72,19 +34,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password using sanitized input
-    const hashedPassword = await hashPassword(sanitizedPassword);
+    // Hash password using validated input
+    const hashedPassword = await hashPassword(password);
 
-    // Create student record with sanitized data
+    // Create student record with validated data
     const student: Student = {
-      PK: `${EntityType.STUDENT}#${sanitizedStudentId}`,
-      SK: `${EntityType.STUDENT}#${sanitizedStudentId}`,
+      PK: `${EntityType.STUDENT}#${studentId}`,
+      SK: `${EntityType.STUDENT}#${studentId}`,
       entityType: EntityType.STUDENT,
-      studentId: sanitizedStudentId,
+      studentId: studentId,
       password: hashedPassword,
-      name: sanitizedName,
-      email: sanitizedEmail,
-      phone: sanitizedPhone,
+      name: name,
+      email: email,
+      phone: phone,
       registrationDate: new Date().toISOString(),
       feesPaid: false,
       active: true,
@@ -92,11 +54,11 @@ export async function POST(request: NextRequest) {
 
     await db.put(student);
 
-    // Generate token with sanitized data
+    // Generate token with validated data
     const token = generateStudentToken({
-      studentId: sanitizedStudentId,
-      name: sanitizedName,
-      email: sanitizedEmail,
+      studentId: studentId,
+      name: name,
+      email: email,
       type: "student",
     });
 

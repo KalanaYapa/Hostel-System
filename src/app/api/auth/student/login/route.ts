@@ -1,41 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import db, { EntityType, Student } from "@/lib/dynamodb";
 import { verifyPassword, generateStudentToken, setAuthCookie } from "@/lib/auth";
-import { sanitizeStudentId, sanitizeString, validateRequestBody } from "@/lib/sanitize";
+import { studentLoginSchema } from "@/lib/schemas/auth";
+import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate request structure
-    validateRequestBody(body, ['studentId', 'password']);
+    // Validate and parse request body with Zod
+    const validationResult = studentLoginSchema.safeParse(body);
 
-    // Sanitize and validate inputs
-    let sanitizedStudentId: string;
-    let sanitizedPassword: string;
-
-    try {
-      sanitizedStudentId = sanitizeStudentId(body.studentId);
-      sanitizedPassword = sanitizeString(body.password);
-
-      // Password length validation
-      if (sanitizedPassword.length < 6 || sanitizedPassword.length > 128) {
-        return NextResponse.json(
-          { error: "Invalid credentials" },
-          { status: 401 }
-        );
-      }
-    } catch (validationError: any) {
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => err.message).join(", ");
       return NextResponse.json(
-        { error: "Invalid input format" },
+        { error: `Validation failed: ${errors}` },
         { status: 400 }
       );
     }
 
-    // Get student record using sanitized input
+    const { studentId, password } = validationResult.data;
+
+    // Get student record using validated input
     const student = (await db.get(
-      `${EntityType.STUDENT}#${sanitizedStudentId}`,
-      `${EntityType.STUDENT}#${sanitizedStudentId}`
+      `${EntityType.STUDENT}#${studentId}`,
+      `${EntityType.STUDENT}#${studentId}`
     )) as Student | undefined;
 
     if (!student) {
@@ -53,8 +42,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password using sanitized input
-    const isValidPassword = await verifyPassword(sanitizedPassword, student.password);
+    // Verify password using validated input
+    const isValidPassword = await verifyPassword(password, student.password);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: "Invalid student ID or password" },
