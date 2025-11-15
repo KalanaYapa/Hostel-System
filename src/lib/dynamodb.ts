@@ -32,6 +32,7 @@ export enum EntityType {
   EMERGENCY_CONTACT = "EMERGENCY_CONTACT",
   PAYMENT = "PAYMENT",
   ATTENDANCE = "ATTENDANCE",
+  LATE_PASS = "LATE_PASS",
 }
 
 // Single Table Design Structure:
@@ -165,6 +166,27 @@ export interface Attendance {
   present: boolean;
   checkInTime?: string;
   checkOutTime?: string;
+}
+
+export interface LatePassRequest {
+  PK: string; // LATE_PASS#studentId
+  SK: string; // LATE_PASS#requestId
+  entityType: EntityType.LATE_PASS;
+  requestId: string;
+  studentId: string;
+  studentName: string;
+  branch: string;
+  roomNumber: string;
+  requestedDate: string; // Date for which pass is needed (YYYY-MM-DD)
+  startTime: string; // Time when student will leave (HH:MM)
+  endTime: string; // Expected return time (HH:MM)
+  reason: string; // Category: personal, medical, family, academic, other
+  description: string; // Detailed description
+  status: "pending" | "approved" | "rejected";
+  approvalNotes?: string; // Admin notes when approving/rejecting
+  createdAt: string;
+  approvedAt?: string;
+  approvedBy?: string; // Admin who approved/rejected
 }
 
 // Helper functions
