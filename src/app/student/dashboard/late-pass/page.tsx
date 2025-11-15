@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface LatePassRequest {
   requestId: string;
@@ -131,6 +132,113 @@ export default function LatePassPage() {
 
   const formatTime = (timeString: string) => {
     return timeString;
+  };
+
+  const downloadPDF = (request: LatePassRequest) => {
+    try {
+      const doc = new jsPDF();
+
+      // Get student data
+      const studentData = localStorage.getItem("studentData");
+      const student = studentData ? JSON.parse(studentData) : {};
+
+      // Title
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("Late Pass Request", 105, 20, { align: "center" });
+
+      // Horizontal line
+      doc.setLineWidth(0.5);
+      doc.line(20, 25, 190, 25);
+
+      // Request ID and Status
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Request ID: ${request.requestId}`, 20, 35);
+
+      doc.setFont("helvetica", "bold");
+      const statusColor = request.status === "approved" ? [34, 197, 94] :
+                         request.status === "rejected" ? [239, 68, 68] : [234, 179, 8];
+      doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+      doc.text(`Status: ${request.status.toUpperCase()}`, 150, 35);
+      doc.setTextColor(0, 0, 0);
+
+      // Student Information Section
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Student Information", 20, 50);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      let yPos = 60;
+      doc.text(`Name: ${student.name || "N/A"}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Student ID: ${student.studentId || "N/A"}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Branch: ${student.branch || "N/A"}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Room Number: ${student.roomNumber || "N/A"}`, 20, yPos);
+
+      // Request Details Section
+      yPos += 15;
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Request Details", 20, yPos);
+
+      yPos += 10;
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Date: ${formatDate(request.requestedDate)}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Departure Time: ${formatTime(request.startTime)}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Expected Return Time: ${formatTime(request.endTime)}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Reason: ${request.reason.charAt(0).toUpperCase() + request.reason.slice(1)}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Submitted On: ${formatDate(request.createdAt)}`, 20, yPos);
+
+      // Description
+      yPos += 12;
+      doc.setFont("helvetica", "bold");
+      doc.text("Description:", 20, yPos);
+      yPos += 7;
+      doc.setFont("helvetica", "normal");
+      const descriptionLines = doc.splitTextToSize(request.description, 170);
+      doc.text(descriptionLines, 20, yPos);
+      yPos += descriptionLines.length * 7;
+
+      // Admin Notes (if any)
+      if (request.approvalNotes) {
+        yPos += 10;
+        doc.setFont("helvetica", "bold");
+        doc.text("Admin Notes:", 20, yPos);
+        yPos += 7;
+        doc.setFont("helvetica", "normal");
+        const notesLines = doc.splitTextToSize(request.approvalNotes, 170);
+        doc.text(notesLines, 20, yPos);
+        yPos += notesLines.length * 7;
+      }
+
+      // Approval Date (if approved)
+      if (request.approvedAt) {
+        yPos += 5;
+        doc.text(`Approved On: ${formatDate(request.approvedAt)}`, 20, yPos);
+      }
+
+      // Footer
+      doc.setFontSize(9);
+      doc.setTextColor(128, 128, 128);
+      doc.text("This is a system-generated document.", 105, 280, { align: "center" });
+      doc.text(`Generated on: ${new Date().toLocaleDateString("en-US")} ${new Date().toLocaleTimeString("en-US")}`, 105, 285, { align: "center" });
+
+      // Save the PDF
+      doc.save(`Late_Pass_${request.requestId}.pdf`);
+      toast.success("PDF downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF");
+    }
   };
 
   return (
@@ -368,6 +476,19 @@ export default function LatePassPage() {
                         </p>
                       </div>
                     )}
+
+                    {/* Download PDF Button */}
+                    <div className="mt-4">
+                      <button
+                        onClick={() => downloadPDF(request)}
+                        className="w-full px-4 py-2 bg-gradient-to-br from-blue-500 to-purple-500 text-white rounded-xl hover:shadow-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download PDF
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </div>
