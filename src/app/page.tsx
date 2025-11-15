@@ -4,7 +4,57 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Home() {
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "name": "Sabaragamuwa University of Sri Lanka",
+        "alternateName": "SUSL",
+        "url": "https://www.sab.ac.lk",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Belihuloya",
+          "addressRegion": "Sabaragamuwa Province",
+          "addressCountry": "LK"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "name": "Sabaragamuwa University Hostel Management System",
+        "url": typeof window !== 'undefined' ? window.location.origin : "https://yourdomain.com"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "SUSL Hostel Management System",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "LKR"
+        },
+        "description": "Comprehensive hostel management solution for Sabaragamuwa University students",
+        "featureList": [
+          "Room Allocation Management",
+          "Online Fee Payment",
+          "Maintenance Request Tracking",
+          "Late Pass Applications",
+          "Attendance Tracking",
+          "Emergency Alerts"
+        ]
+      }
+    ]
+  };
   return (
+    <>
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
     <div className="min-h-screen bg-neutral-50 transition-colors duration-500">
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-5xl mx-auto text-center">
@@ -16,9 +66,9 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl font-light tracking-tight text-neutral-900 mb-6">
               Hostel Management System
             </h1>
-            <p className="text-xl md:text-2xl text-neutral-600 font-light mb-16">
+            <h2 className="text-xl md:text-2xl text-neutral-600 font-light mb-16">
               Sabaragamuwa University of Sri Lanka
-            </p>
+            </h2>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -102,5 +152,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </>
   );
 }
