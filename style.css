@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #002fff;
+    background: linear-gradient(to right, #00f2ff, #4444ff);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -30,7 +30,7 @@ body {
 .icon {
     width: 80px;
     height: 80px;
-    background: #002fff;
+    background: #4583ff;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -79,13 +79,13 @@ input {
 
 input:focus {
     outline: none;
-    border-color: #002fff;
+    border-color: #4583ff;
 }
 
 .btn-login {
     width: 100%;
     padding: 14px;
-    background: #002fff;
+    background: #4583ff;
     color: white;
     border: none;
     border-radius: 8px;
@@ -97,7 +97,7 @@ input:focus {
 }
 
 .btn-login:hover {
-    background: #0025f6;
+    background: #4583ff;
 }
 
 .btn-login:active {
@@ -112,7 +112,7 @@ input:focus {
 }
 
 .footer a {
-    color: #002fff;
+    color:#4583ff;
     text-decoration: none;
     font-weight: 600;
 }
