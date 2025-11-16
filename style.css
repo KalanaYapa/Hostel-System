@@ -28,6 +28,10 @@ body {
     font-size: 30px;
 }
 
+.user-icon {
+    height: 50px;
+}
+
 h1 {
     text-align: center;
     margin-bottom: 5px;
