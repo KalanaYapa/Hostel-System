@@ -38,6 +38,9 @@ body {
     margin: 0 auto 20px;
     color: white;
 }
+.user-icon{
+    width: 60px;
+}
 
 h1 {
     text-align: center;
