@@ -30,6 +30,7 @@ body {
 
 .user-icon {
     height: 50px;
+    stroke-width: 2;
 }
 
 h1 {
@@ -46,11 +47,13 @@ h1 {
 label {
     display: block;
     margin-top: 12px;
-    font-weight: bold;
+    color: rgb(68, 66, 66);
+    font-weight:550;
+    font-size:0.9em;
 }
 
 input {
-    width: 90%;
+    width: 92%;
     padding: 15px;
     margin-top: 5px;
     border-radius: 8px;
@@ -80,7 +83,13 @@ button:hover {
     color: gray;
 }
 
-.small-text a {
-    color: #4f46e5;
+.small-text .sign-here {
+    color: blue;
     text-decoration: none;
 }
+
+.small-text .back-home {
+    color: grey;
+    text-decoration: none;
+}
+
