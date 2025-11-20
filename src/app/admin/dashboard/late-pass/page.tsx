@@ -50,12 +50,8 @@ export default function AdminLatePassPage() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/late-pass", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/late-pass");
 
       if (!response.ok) throw new Error("Failed to fetch requests");
 
@@ -88,12 +84,11 @@ export default function AdminLatePassPage() {
 
     setUpdating(true);
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/late-pass", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           requestId: selectedRequest.requestId,

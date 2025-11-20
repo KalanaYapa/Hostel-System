@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       type: "student",
     });
 
-    // Create response
+    // Create response (token sent via HTTP-only cookie only)
     const response = NextResponse.json(
       {
         message: "Email verified and registration completed successfully",
@@ -168,7 +168,6 @@ export async function POST(request: NextRequest) {
           email: student.email,
           phone: student.phone,
         },
-        token,
       },
       { status: 201 }
     );

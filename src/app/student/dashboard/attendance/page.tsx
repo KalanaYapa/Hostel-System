@@ -34,12 +34,8 @@ export default function AttendancePage() {
 
   const fetchAttendance = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/attendance", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/attendance");
 
       if (response.ok) {
         const data = await response.json();
@@ -66,12 +62,9 @@ export default function AttendancePage() {
     setMarking(true);
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/student/attendance", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       const data = await response.json();

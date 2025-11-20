@@ -33,12 +33,8 @@ export default function MaintenancePage() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/maintenance", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically - no need for Authorization header
+      const response = await fetch("/api/student/maintenance");
 
       if (response.ok) {
         const data = await response.json();
@@ -59,15 +55,13 @@ export default function MaintenancePage() {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-      console.log("Token from localStorage:", token ? "Present" : "Missing");
       console.log("Form data:", formData);
 
+      // Cookies are sent automatically - no need for Authorization header
       const response = await fetch("/api/student/maintenance", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });

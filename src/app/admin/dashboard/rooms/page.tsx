@@ -62,10 +62,8 @@ export default function RoomsPage() {
 
   const fetchBranches = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/branches", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/branches");
 
       if (response.ok) {
         const data = await response.json();
@@ -80,10 +78,8 @@ export default function RoomsPage() {
 
   const fetchRooms = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/rooms");
 
       if (response.ok) {
         const data = await response.json();
@@ -100,7 +96,7 @@ export default function RoomsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const url = editingBranch
         ? "/api/admin/branches"
         : "/api/admin/branches";
@@ -113,7 +109,6 @@ export default function RoomsPage() {
         method: editingBranch ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
@@ -142,11 +137,10 @@ export default function RoomsPage() {
     if (!confirm("Are you sure you want to delete this branch?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const branch = branches.find(b => b.branchId === branchId);
       const response = await fetch(`/api/admin/branches?branchId=${branchId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -166,8 +160,7 @@ export default function RoomsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-
+      // Cookies are sent automatically
       const body = editingRoom
         ? {
             branch: editingRoom.branch,
@@ -180,7 +173,6 @@ export default function RoomsPage() {
         method: editingRoom ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
@@ -231,10 +223,9 @@ export default function RoomsPage() {
     if (!confirm("Are you sure you want to delete this room?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(`/api/admin/rooms?branch=${branch}&roomNumber=${roomNumber}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

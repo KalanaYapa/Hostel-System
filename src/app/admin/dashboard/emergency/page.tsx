@@ -38,10 +38,8 @@ export default function EmergencyContactsPage() {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/emergency", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/emergency");
 
       if (response.ok) {
         const data = await response.json();
@@ -62,8 +60,7 @@ export default function EmergencyContactsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-
+      // Cookies are sent automatically
       const body = editingContact
         ? { contactId: editingContact.contactId, category: editingContact.category, updates: formData }
         : formData;
@@ -72,7 +69,6 @@ export default function EmergencyContactsPage() {
         method: editingContact ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
@@ -121,10 +117,9 @@ export default function EmergencyContactsPage() {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(`/api/admin/emergency?contactId=${contactId}&category=${category}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {

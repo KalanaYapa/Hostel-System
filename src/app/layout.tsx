@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_LK',
-    url: 'https://yourdomain.com/',
+    url: 'https://susl-hostel.spacesolutionsinternational.com/',
     siteName: 'Sabaragamuwa University Hostel Management System',
     title: 'SUSL Hostel Management | Student Accommodation Portal',
     description: 'Comprehensive hostel management solution for Sabaragamuwa University students. Manage room bookings, fees, maintenance, and more.',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     images: ['/campus.jpeg'],
   },
   alternates: {
-    canonical: 'https://yourdomain.com/',
+    canonical: 'https://susl-hostel.spacesolutionsinternational.com/',
   },
   category: 'Education',
   classification: 'University Hostel Management',

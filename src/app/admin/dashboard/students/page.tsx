@@ -55,12 +55,8 @@ export default function StudentsManagementPage() {
 
   const fetchStudents = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/students", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/students");
 
       if (response.ok) {
         const data = await response.json();
@@ -81,12 +77,8 @@ export default function StudentsManagementPage() {
 
   const fetchBranches = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/branches", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/branches");
 
       if (response.ok) {
         const data = await response.json();
@@ -99,12 +91,8 @@ export default function StudentsManagementPage() {
 
   const fetchRooms = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/rooms", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/rooms");
 
       if (response.ok) {
         const data = await response.json();
@@ -127,12 +115,11 @@ export default function StudentsManagementPage() {
     if (!editingStudent) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/students", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           studentId: editingStudent.studentId,
@@ -160,14 +147,11 @@ export default function StudentsManagementPage() {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(
         `/api/admin/students?studentId=${studentId}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
 

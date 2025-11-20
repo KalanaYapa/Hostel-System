@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const validationResult = studentSignupSchema.safeParse(body);
 
     if (!validationResult.success) {
-      const errors = validationResult.error.errors.map(err => err.message).join(", ");
+      const errors = validationResult.error?.errors?.map(err => err.message).join(", ") || "Invalid input data";
       return NextResponse.json(
         { error: `Validation failed: ${errors}` },
         { status: 400 }

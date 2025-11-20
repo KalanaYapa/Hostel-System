@@ -60,10 +60,8 @@ export default function FoodMenuPage() {
 
   const fetchMenuItems = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/food", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/food");
 
       if (response.ok) {
         const data = await response.json();
@@ -165,8 +163,7 @@ export default function FoodMenuPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-
+      // Cookies are sent automatically
       const body = editingItem
         ? { menuId: editingItem.menuId, updates: formData }
         : formData;
@@ -175,7 +172,6 @@ export default function FoodMenuPage() {
         method: editingItem ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
@@ -249,11 +245,10 @@ export default function FoodMenuPage() {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const item = menuItems.find(i => i.menuId === menuId);
       const response = await fetch(`/api/admin/food?menuId=${menuId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -302,12 +297,11 @@ export default function FoodMenuPage() {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/food/orders", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ orderId, status: newStatus }),
       });

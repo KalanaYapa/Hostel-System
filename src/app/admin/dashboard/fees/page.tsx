@@ -35,12 +35,8 @@ export default function AdminFeesPage() {
 
   const fetchFeeConfigurations = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/fees", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/fees");
 
       if (response.ok) {
         const data = await response.json();
@@ -57,12 +53,11 @@ export default function AdminFeesPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/fees", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -110,12 +105,9 @@ export default function AdminFeesPage() {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(`/api/admin/fees?year=${year}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (response.ok) {

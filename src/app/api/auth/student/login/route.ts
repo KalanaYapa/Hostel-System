@@ -59,10 +59,9 @@ export async function POST(request: NextRequest) {
       type: "student",
     });
 
-    // Create response with student data
+    // Create response with student data (token sent via HTTP-only cookie only)
     const response = NextResponse.json({
       message: "Login successful",
-      token: token,
       student: {
         studentId: student.studentId,
         name: student.name,

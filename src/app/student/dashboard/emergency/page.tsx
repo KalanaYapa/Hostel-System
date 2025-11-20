@@ -28,12 +28,8 @@ export default function EmergencyPage() {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/emergency", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/emergency");
 
       if (response.ok) {
         const data = await response.json();

@@ -32,10 +32,9 @@ export async function POST(request: NextRequest) {
     // Generate token
     const token = generateAdminToken();
 
-    // Create response
+    // Create response (token sent via HTTP-only cookie only)
     const response = NextResponse.json({
       message: "Admin login successful",
-      token: token,
     });
 
     // Set HTTP-only cookie with token (XSS protection)

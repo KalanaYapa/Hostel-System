@@ -45,12 +45,8 @@ export default function FoodPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/food", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/food");
 
       if (response.ok) {
         const data = await response.json();
@@ -111,12 +107,11 @@ export default function FoodPage() {
     setOrdering(true);
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/student/food", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ items: cart }),
       });

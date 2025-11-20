@@ -31,12 +31,8 @@ export default function FeesPage() {
 
   const fetchPayments = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/payment", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/payment");
 
       if (response.ok) {
         const data = await response.json();
@@ -57,12 +53,11 @@ export default function FeesPage() {
     setPaying(true);
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/student/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           amount: parseFloat(amount),

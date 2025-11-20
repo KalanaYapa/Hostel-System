@@ -139,16 +139,6 @@ export default function Home() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-16"
-          >
-            <p className="text-neutral-500 text-sm font-light">
-              © 2025 SPACE SOLUTIONS INTERNATIONAL (PVT) LTD. All rights reserved.
-            </p>
-          </motion.div>
         </div>
       </div>
     </div>

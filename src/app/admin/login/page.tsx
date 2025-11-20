@@ -105,8 +105,7 @@ export default function AdminLogin() {
       // Successful login - reset attempts
       rateLimiter.resetAttempts(ADMIN_IDENTIFIER);
 
-      // Store token
-      localStorage.setItem("token", data.token);
+      // Store user type (token is in HTTP-only cookie)
       localStorage.setItem("userType", "admin");
 
       // Show success toast

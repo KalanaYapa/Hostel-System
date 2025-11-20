@@ -21,11 +21,11 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Cookies are sent automatically
     const userType = localStorage.getItem("userType");
     const storedData = localStorage.getItem("studentData");
 
-    if (!token || userType !== "student") {
+    if (userType !== "student") {
       router.push("/student/login");
       return;
     }
@@ -37,7 +37,6 @@ export default function StudentDashboard() {
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("userType");
     localStorage.removeItem("studentData");
     router.push("/student/login");

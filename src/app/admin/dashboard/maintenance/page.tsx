@@ -39,10 +39,8 @@ export default function MaintenancePage() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/maintenance", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/maintenance");
 
       if (response.ok) {
         const data = await response.json();
@@ -129,12 +127,11 @@ export default function MaintenancePage() {
 
   const handleUpdateStatus = async (requestId: string, studentId: string, status: string, notes: string) => {
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/maintenance", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           requestId,

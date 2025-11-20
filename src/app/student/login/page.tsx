@@ -109,8 +109,7 @@ export default function StudentLogin() {
       // Successful login - reset attempts
       rateLimiter.resetAttempts(formData.studentId);
 
-      // Store token
-      localStorage.setItem("token", data.token);
+      // Store user type and data (token is in HTTP-only cookie)
       localStorage.setItem("userType", "student");
       localStorage.setItem("studentData", JSON.stringify(data.student));
 
