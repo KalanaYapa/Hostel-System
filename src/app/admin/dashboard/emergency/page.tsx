@@ -8,7 +8,7 @@ import { toastMessages } from "@/lib/toast-messages";
 interface EmergencyContact {
   contactId: string;
   name: string;
-  category: "medical" | "security" | "transport" | "other";
+  category: "medical" | "security" | "transport" | "maintain-service" |"other";
   phone: string;
   email?: string;
   available247: boolean;
