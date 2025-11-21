@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Branch {
   branchId: string;
@@ -61,10 +62,8 @@ export default function RoomsPage() {
 
   const fetchBranches = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/branches", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/branches");
 
       if (response.ok) {
         const data = await response.json();
@@ -79,10 +78,8 @@ export default function RoomsPage() {
 
   const fetchRooms = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/rooms");
 
       if (response.ok) {
         const data = await response.json();
@@ -99,7 +96,7 @@ export default function RoomsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const url = editingBranch
         ? "/api/admin/branches"
         : "/api/admin/branches";
@@ -112,24 +109,27 @@ export default function RoomsPage() {
         method: editingBranch ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        alert(editingBranch ? "Branch updated successfully!" : "Branch added successfully!");
+        if (editingBranch) {
+          toastMessages.branches.updateSuccess(branchFormData.name);
+        } else {
+          toastMessages.branches.createSuccess(branchFormData.name);
+        }
         setShowAddModal(false);
         setEditingBranch(null);
         setBranchFormData({ name: "", description: "", capacity: 0 });
         fetchBranches();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to save branch");
+        toastMessages.branches.createError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save branch");
+      toastMessages.branches.createError();
     }
   };
 
@@ -137,22 +137,22 @@ export default function RoomsPage() {
     if (!confirm("Are you sure you want to delete this branch?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
+      const branch = branches.find(b => b.branchId === branchId);
       const response = await fetch(`/api/admin/branches?branchId=${branchId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Branch deleted successfully!");
+        toastMessages.branches.deleteSuccess(branch?.name);
         fetchBranches();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete branch");
+        toastMessages.branches.deleteError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete branch");
+      toastMessages.branches.deleteError();
     }
   };
 
@@ -160,8 +160,7 @@ export default function RoomsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-
+      // Cookies are sent automatically
       const body = editingRoom
         ? {
             branch: editingRoom.branch,
@@ -174,24 +173,27 @@ export default function RoomsPage() {
         method: editingRoom ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        alert(editingRoom ? "Room updated successfully!" : "Room added successfully!");
+        if (editingRoom) {
+          toastMessages.rooms.updateSuccess(formData.roomNumber);
+        } else {
+          toastMessages.rooms.createSuccess(formData.roomNumber);
+        }
         setShowAddRoomModal(false);
         setEditingRoom(null);
         setFormData({ roomNumber: "", branch: "", capacity: 2, floor: 1, type: "double" });
         fetchRooms();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to save room");
+        toastMessages.rooms.createError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save room");
+      toastMessages.rooms.createError();
     }
   };
 
@@ -221,22 +223,21 @@ export default function RoomsPage() {
     if (!confirm("Are you sure you want to delete this room?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(`/api/admin/rooms?branch=${branch}&roomNumber=${roomNumber}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Room deleted successfully!");
+        toastMessages.rooms.deleteSuccess(roomNumber);
         fetchRooms();
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete room");
+        toastMessages.rooms.deleteError(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete room");
+      toastMessages.rooms.deleteError();
     }
   };
 

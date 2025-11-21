@@ -1,0 +1,36 @@
+# robots.txt for Sabaragamuwa University Hostel Management System
+# Allow search engines to crawl public pages
+
+User-agent: *
+Allow: /
+Allow: /student/login
+Allow: /student/signup
+Allow: /admin/login
+
+# Disallow private/authenticated pages
+Disallow: /student/dashboard
+Disallow: /admin/dashboard
+Disallow: /api/
+
+# Disallow authentication routes
+Disallow: /auth/
+Disallow: /student/logout
+Disallow: /admin/logout
+
+# Allow crawling of static assets
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.ico$
+
+# Block indexing of build files
+Disallow: /_next/static/
+Disallow: /.next/
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml

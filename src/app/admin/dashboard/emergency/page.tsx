@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface EmergencyContact {
   contactId: string;
   name: string;
-  category: "medical" | "security" | "transport" | "other";
+  category: "medical" | "security" | "transport" | "maintain-service" |"other";
   phone: string;
   email?: string;
   available247: boolean;
@@ -37,10 +38,8 @@ export default function EmergencyContactsPage() {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/emergency", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/emergency");
 
       if (response.ok) {
         const data = await response.json();
@@ -61,8 +60,7 @@ export default function EmergencyContactsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-
+      // Cookies are sent automatically
       const body = editingContact
         ? { contactId: editingContact.contactId, category: editingContact.category, updates: formData }
         : formData;
@@ -71,13 +69,16 @@ export default function EmergencyContactsPage() {
         method: editingContact ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        alert(editingContact ? "Contact updated!" : "Contact added!");
+        if (editingContact) {
+          toastMessages.emergency.updateSuccess();
+        } else {
+          toastMessages.emergency.createSuccess();
+        }
         setShowAddModal(false);
         setEditingContact(null);
         setFormData({
@@ -91,11 +92,11 @@ export default function EmergencyContactsPage() {
         fetchContacts();
       } else {
         const errorData = await response.json();
-        alert(`Failed to save contact: ${errorData.error || 'Unknown error'}`);
+        toastMessages.emergency.createError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save contact");
+      toastMessages.emergency.createError();
     }
   };
 
@@ -116,22 +117,21 @@ export default function EmergencyContactsPage() {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(`/api/admin/emergency?contactId=${contactId}&category=${category}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Contact deleted successfully!");
+        toastMessages.emergency.deleteSuccess();
         fetchContacts();
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete contact: ${errorData.error || 'Unknown error'}`);
+        toastMessages.emergency.deleteError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete contact");
+      toastMessages.emergency.deleteError();
     }
   };
 
