@@ -1,6 +1,5 @@
 "use client";
 
-// name verification
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,53 +8,52 @@ import { toastMessages } from "@/lib/toast-messages";
 
 export default function App() {
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockoutMessage, setLockoutMessage] = useState("");
   const [remainingTime, setRemainingTime] = useState(0);
 
   const ADMIN_IDENTIFIER = "admin";
+  const router = useRouter();
 
   useEffect(() => {
-    const checkLockout = () => {
+    const updateLockoutStatus = () => {
       const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
       if (lockoutStatus.locked && lockoutStatus.remainingTime) {
         setRemainingTime(lockoutStatus.remainingTime);
-        const minutes = Math.floor(lockoutStatus.remainingTime / 60);
-        const seconds = lockoutStatus.remainingTime % 60;
-        setLockoutMessage(
-          `Too many failed attempts. Please try again in ${minutes}:${seconds
-            .toString()
-            .padStart(2, "0")}`
-        );
       } else {
-        setLockoutMessage("");
         setRemainingTime(0);
+        setLockoutMessage("");
       }
     };
 
-    checkLockout();
+    updateLockoutStatus();
+  }, []);
 
-    if (remainingTime > 0) {
-      const timer = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev <= 1) {
-            setLockoutMessage("");
-            return 0;
-          }
-          const newTime = prev - 1;
-          const minutes = Math.floor(newTime / 60);
-          const seconds = newTime % 60;
-          setLockoutMessage(
-            `Too many failed attempts. Please try again in ${minutes}:${seconds
-              .toString()
-              .padStart(2, "0")}`
-          );
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
+  useEffect(() => {
+    if (remainingTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setLockoutMessage("");
+          return 0;
+        }
+        const newTime = prev - 1;
+        const minutes = Math.floor(newTime / 60);
+        const seconds = newTime % 60;
+        setLockoutMessage(
+          `Too many failed attempts. Try again in ${minutes}:${seconds
+            .toString()
+            .padStart(2, "0")}`
+        );
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, [remainingTime]);
 
   const handleSubmit = async (e) => {
@@ -64,12 +62,10 @@ export default function App() {
 
     const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
     if (lockoutStatus.locked && lockoutStatus.remainingTime) {
-      const minutes = Math.floor(lockoutStatus.remainingTime / 60);
-      const seconds = lockoutStatus.remainingTime % 60;
       setError(
-        `Too many failed attempts. Please try again in ${minutes}:${seconds
-          .toString()
-          .padStart(2, "0")}`
+        `Too many failed attempts. Try again in ${Math.floor(
+          lockoutStatus.remainingTime / 60
+        )}:${(lockoutStatus.remainingTime % 60).toString().padStart(2, "0")}`
       );
       setRemainingTime(lockoutStatus.remainingTime);
       return;
@@ -80,9 +76,9 @@ export default function App() {
     try {
       const MOCK_PASSWORD = "adminpassword";
 
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      if (!response.ok) {
+      if (password !== MOCK_PASSWORD) {
         const result = rateLimiter.recordFailedAttempt(ADMIN_IDENTIFIER);
 
         if (result.locked && result.lockoutTime) {
@@ -92,9 +88,9 @@ export default function App() {
           setRemainingTime(result.lockoutTime);
           toastMessages.auth.rateLimited(`${minutes} minutes`);
         } else {
-          const errorMsg = `${data.error || "Invalid password"}. ${
-            result.attemptsLeft
-          } attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
+          const errorMsg = `Invalid password. ${result.attemptsLeft} attempt${
+            result.attemptsLeft !== 1 ? "s" : ""
+          } remaining.`;
           setError(errorMsg);
           toastMessages.auth.loginError(errorMsg);
         }
@@ -140,20 +136,33 @@ export default function App() {
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-teal-200">
+          <div className="relative">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-teal-200"
+            >
               Admin Password
             </label>
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
+              autoFocus
+              autoComplete="current-password"
               className="mt-2 block w-full px-4 py-3 rounded-xl bg-indigo-800 border border-indigo-700 text-white placeholder-indigo-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
               placeholder="Enter admin password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type="button"
+              aria-label="Toggle password visibility"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white transition"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
           </div>
 
           {error && (
@@ -162,10 +171,16 @@ export default function App() {
             </div>
           )}
 
+          {lockoutMessage && (
+            <div className="text-yellow-200 bg-yellow-900/30 text-sm text-center p-2 rounded-lg border border-yellow-700/40">
+              {lockoutMessage}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading || remainingTime > 0}
-            className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-teal-700 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-teal-700 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading
               ? "Signing in..."
@@ -175,7 +190,10 @@ export default function App() {
           </button>
 
           <div className="text-center">
-            <Link href="/" className="text-sm text-indigo-300 hover:text-indigo-100 transition">
+            <Link
+              href="/"
+              className="text-sm text-indigo-300 hover:text-indigo-100 transition"
+            >
               ⟵ Back to Home
             </Link>
           </div>
