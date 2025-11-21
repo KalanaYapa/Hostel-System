@@ -3,15 +3,16 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface EmergencyContact {
   contactId: string;
   name: string;
-  category: "Medical" | "Security" | "Transport" | "Fire" | "Police" | "Other";
+  category: "medical" | "security" | "transport" | "other";
   phone: string;
   email?: string;
-  availability: "24/7" | "Working Hours" | "Emergency Only";
-  description?: string;
+  available247: boolean;
+  description: string;
 }
 
 export default function EmergencyContactsPage() {
@@ -22,15 +23,14 @@ export default function EmergencyContactsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
-    category: "Medical" as "Medical" | "Security" | "Transport" | "Fire" | "Police" | "Other",
+    category: "medical" as "medical" | "security" | "transport" | "other",
     phone: "",
     email: "",
-    availability: "24/7" as "24/7" | "Working Hours" | "Emergency Only",
+    available247: true,
     description: "",
   });
 
-  const categories = ["Medical", "Security", "Transport", "Fire", "Police", "Other"];
-  const availabilityOptions = ["24/7", "Working Hours", "Emergency Only"];
+  const categories = ["medical", "security", "transport", "other"];
 
   useEffect(() => {
     fetchContacts();
@@ -38,89 +38,19 @@ export default function EmergencyContactsPage() {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/emergency-contacts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/emergency");
 
       if (response.ok) {
         const data = await response.json();
         setContacts(data.contacts || []);
       } else {
-        // Mock data for development
-        setContacts([
-          {
-            contactId: "1",
-            name: "City Hospital Emergency",
-            category: "Medical",
-            phone: "+91-9876543210",
-            email: "emergency@cityhospital.com",
-            availability: "24/7",
-            description: "Main city hospital with 24/7 emergency services",
-          },
-          {
-            contactId: "2",
-            name: "Campus Clinic",
-            category: "Medical",
-            phone: "+91-9876543211",
-            email: "clinic@campus.edu",
-            availability: "Working Hours",
-            description: "Campus medical clinic - 8 AM to 8 PM",
-          },
-          {
-            contactId: "3",
-            name: "Hostel Security Office",
-            category: "Security",
-            phone: "+91-9876543212",
-            availability: "24/7",
-            description: "Main hostel security control room",
-          },
-          {
-            contactId: "4",
-            name: "Campus Security",
-            category: "Security",
-            phone: "+91-9876543213",
-            email: "security@campus.edu",
-            availability: "24/7",
-            description: "Campus-wide security services",
-          },
-          {
-            contactId: "5",
-            name: "Fire Brigade",
-            category: "Fire",
-            phone: "101",
-            availability: "24/7",
-            description: "Local fire department emergency number",
-          },
-          {
-            contactId: "6",
-            name: "Police Control Room",
-            category: "Police",
-            phone: "100",
-            availability: "24/7",
-            description: "Police emergency helpline",
-          },
-          {
-            contactId: "7",
-            name: "Campus Transport",
-            category: "Transport",
-            phone: "+91-9876543214",
-            email: "transport@campus.edu",
-            availability: "Working Hours",
-            description: "Campus shuttle and emergency transport - 6 AM to 10 PM",
-          },
-          {
-            contactId: "8",
-            name: "Ambulance Service",
-            category: "Medical",
-            phone: "108",
-            availability: "24/7",
-            description: "Emergency ambulance service",
-          },
-        ]);
+        console.error("Failed to fetch contacts");
+        setContacts([]);
       }
     } catch (error) {
       console.error("Failed to fetch contacts:", error);
+      setContacts([]);
     } finally {
       setLoading(false);
     }
@@ -130,67 +60,43 @@ export default function EmergencyContactsPage() {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
-      const url = editingContact
-        ? `/api/admin/emergency-contacts/${editingContact.contactId}`
-        : "/api/admin/emergency-contacts";
+      // Cookies are sent automatically
+      const body = editingContact
+        ? { contactId: editingContact.contactId, category: editingContact.category, updates: formData }
+        : formData;
 
-      const response = await fetch(url, {
-        method: editingContact ? "PUT" : "POST",
+      const response = await fetch("/api/admin/emergency", {
+        method: editingContact ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
-        alert(editingContact ? "Contact updated!" : "Contact added!");
+        if (editingContact) {
+          toastMessages.emergency.updateSuccess();
+        } else {
+          toastMessages.emergency.createSuccess();
+        }
         setShowAddModal(false);
         setEditingContact(null);
         setFormData({
           name: "",
-          category: "Medical",
+          category: "medical",
           phone: "",
           email: "",
-          availability: "24/7",
+          available247: true,
           description: "",
         });
         fetchContacts();
       } else {
-        // Update mock data
-        if (editingContact) {
-          setContacts(
-            contacts.map((contact) =>
-              contact.contactId === editingContact.contactId
-                ? { ...contact, ...formData }
-                : contact
-            )
-          );
-        } else {
-          setContacts([
-            ...contacts,
-            {
-              contactId: String(contacts.length + 1),
-              ...formData,
-            },
-          ]);
-        }
-        alert(editingContact ? "Contact updated!" : "Contact added!");
-        setShowAddModal(false);
-        setEditingContact(null);
-        setFormData({
-          name: "",
-          category: "Medical",
-          phone: "",
-          email: "",
-          availability: "24/7",
-          description: "",
-        });
+        const errorData = await response.json();
+        toastMessages.emergency.createError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save contact");
+      toastMessages.emergency.createError();
     }
   };
 
@@ -201,33 +107,31 @@ export default function EmergencyContactsPage() {
       category: contact.category,
       phone: contact.phone,
       email: contact.email || "",
-      availability: contact.availability,
+      available247: contact.available247,
       description: contact.description || "",
     });
     setShowAddModal(true);
   };
 
-  const handleDelete = async (contactId: string) => {
+  const handleDelete = async (contactId: string, category: string) => {
     if (!confirm("Are you sure you want to delete this contact?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/emergency-contacts/${contactId}`, {
+      // Cookies are sent automatically
+      const response = await fetch(`/api/admin/emergency?contactId=${contactId}&category=${category}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        alert("Contact deleted successfully!");
+        toastMessages.emergency.deleteSuccess();
         fetchContacts();
       } else {
-        // Update mock data
-        setContacts(contacts.filter((contact) => contact.contactId !== contactId));
-        alert("Contact deleted successfully!");
+        const errorData = await response.json();
+        toastMessages.emergency.deleteError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to delete contact");
+      toastMessages.emergency.deleteError();
     }
   };
 
@@ -236,33 +140,29 @@ export default function EmergencyContactsPage() {
   };
 
   const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "Medical":
+    switch (category.toLowerCase()) {
+      case "medical":
         return "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z";
-      case "Security":
+      case "security":
         return "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z";
-      case "Transport":
+      case "transport":
         return "M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2";
-      case "Fire":
-        return "M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z";
-      case "Police":
-        return "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z";
+      case "other":
+        return "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z";
       default:
         return "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z";
     }
   };
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Medical":
+    switch (category.toLowerCase()) {
+      case "medical":
         return "from-red-500 to-pink-500";
-      case "Security":
+      case "security":
         return "from-blue-500 to-indigo-500";
-      case "Transport":
+      case "transport":
         return "from-green-500 to-emerald-500";
-      case "Fire":
-        return "from-orange-500 to-red-500";
-      case "Police":
+      case "other":
         return "from-purple-500 to-pink-500";
       default:
         return "from-neutral-500 to-neutral-600";
@@ -282,9 +182,9 @@ export default function EmergencyContactsPage() {
 
   const stats = {
     total: contacts.length,
-    medical: contacts.filter((c) => c.category === "Medical").length,
-    security: contacts.filter((c) => c.category === "Security").length,
-    emergency24x7: contacts.filter((c) => c.availability === "24/7").length,
+    medical: contacts.filter((c) => c.category === "medical").length,
+    security: contacts.filter((c) => c.category === "security").length,
+    emergency24x7: contacts.filter((c) => c.available247).length,
   };
 
   return (
@@ -335,10 +235,10 @@ export default function EmergencyContactsPage() {
               setEditingContact(null);
               setFormData({
                 name: "",
-                category: "Medical",
+                category: "medical",
                 phone: "",
                 email: "",
-                availability: "24/7",
+                available247: true,
                 description: "",
               });
               setShowAddModal(true);
@@ -354,6 +254,11 @@ export default function EmergencyContactsPage() {
       {loading ? (
         <div className="text-center py-12">
           <p className="text-neutral-600">Loading contacts...</p>
+        </div>
+      ) : contacts.length === 0 ? (
+        <div className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 text-center border border-neutral-200/50">
+          <p className="text-gray-600 mb-2">No emergency contacts added yet.</p>
+          <p className="text-sm text-gray-500">Click the "Add Contact" button above to add your first emergency contact.</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -394,13 +299,11 @@ export default function EmergencyContactsPage() {
                         <div>
                           <h3 className="text-xl font-light text-neutral-900">{contact.name}</h3>
                           <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                            contact.availability === "24/7"
+                            contact.available247
                               ? "bg-green-500/10 text-green-600"
-                              : contact.availability === "Working Hours"
-                              ? "bg-blue-500/10 text-blue-600"
-                              : "bg-red-500/10 text-red-600"
+                              : "bg-blue-500/10 text-blue-600"
                           }`}>
-                            {contact.availability}
+                            {contact.available247 ? "24/7 Available" : "Working Hours"}
                           </span>
                         </div>
                       </div>
@@ -442,7 +345,7 @@ export default function EmergencyContactsPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(contact.contactId)}
+                          onClick={() => handleDelete(contact.contactId, contact.category)}
                           className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-2xl transition-all text-sm font-medium"
                         >
                           Delete
@@ -500,7 +403,7 @@ export default function EmergencyContactsPage() {
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
-                        {category}
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
                   </select>
@@ -528,19 +431,15 @@ export default function EmergencyContactsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Availability</label>
-                  <select
-                    value={formData.availability}
-                    onChange={(e) => setFormData({ ...formData, availability: e.target.value as any })}
-                    className="w-full px-4 py-3 rounded-2xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-black/20"
-                    required
-                  >
-                    {availabilityOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.available247}
+                      onChange={(e) => setFormData({ ...formData, available247: e.target.checked })}
+                      className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-neutral-700">Available 24/7</span>
+                  </label>
                 </div>
 
                 <div>

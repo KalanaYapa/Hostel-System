@@ -4,6 +4,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/app/components/AdminSidebar";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface Stats {
   totalStudents: number;
@@ -14,6 +29,39 @@ interface Stats {
   pendingOrders: number;
   paidFees: number;
   unpaidFees: number;
+  totalCapacity: number;
+  totalOccupied: number;
+  occupancyRate: number;
+}
+
+interface ChartData {
+  roomsByBranch: Array<{
+    name: string;
+    totalRooms: number;
+    occupiedRooms: number;
+    capacity: number;
+    occupied: number;
+    available: number;
+  }>;
+  studentsByBranch: Array<{
+    name: string;
+    total: number;
+    active: number;
+    inactive: number;
+  }>;
+  feeStatus: Array<{
+    name: string;
+    value: number;
+    percentage: number;
+  }>;
+  maintenanceByStatus: Array<{
+    name: string;
+    value: number;
+  }>;
+  ordersByStatus: Array<{
+    name: string;
+    value: number;
+  }>;
 }
 
 export default function AdminDashboard() {
@@ -27,14 +75,24 @@ export default function AdminDashboard() {
     pendingOrders: 0,
     paidFees: 0,
     unpaidFees: 0,
+    totalCapacity: 0,
+    totalOccupied: 0,
+    occupancyRate: 0,
+  });
+  const [chartData, setChartData] = useState<ChartData>({
+    roomsByBranch: [],
+    studentsByBranch: [],
+    feeStatus: [],
+    maintenanceByStatus: [],
+    ordersByStatus: [],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Cookies are sent automatically
     const userType = localStorage.getItem("userType");
 
-    if (!token || userType !== "admin") {
+    if (userType !== "admin") {
       router.push("/admin/login");
       return;
     }
@@ -44,16 +102,13 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/stats", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/stats");
 
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats || stats);
+        setChartData(data.chartData || chartData);
       }
     } catch (error) {
       console.error("Failed to fetch stats:", error);
@@ -63,9 +118,21 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("userType");
     router.push("/admin/login");
+  };
+
+  // Colors for charts
+  const COLORS = {
+    primary: ["#3b82f6", "#06b6d4", "#8b5cf6", "#ec4899", "#f59e0b"],
+    pie: {
+      paid: "#10b981",
+      unpaid: "#ef4444",
+      pending: "#f59e0b",
+      inProgress: "#3b82f6",
+      completed: "#10b981",
+      cancelled: "#6b7280",
+    },
   };
 
   const statsCards = [
@@ -115,6 +182,13 @@ export default function AdminDashboard() {
       color: "from-purple-500 to-pink-500",
     },
     {
+      title: "Fees Management",
+      description: "Configure yearly hostel fees",
+      href: "/admin/dashboard/fees",
+      icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+      color: "from-green-500 to-emerald-500",
+    },
+    {
       title: "Maintenance",
       description: "View and manage maintenance requests",
       href: "/admin/dashboard/maintenance",
@@ -126,7 +200,7 @@ export default function AdminDashboard() {
       description: "Manage food menu and orders",
       href: "/admin/dashboard/food",
       icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
-      color: "from-green-500 to-teal-500",
+      color: "from-teal-500 to-cyan-500",
     },
     {
       title: "Emergency",
@@ -230,6 +304,216 @@ export default function AdminDashboard() {
               </p>
             </motion.div>
           ))}
+        </div>
+
+        {/* Charts Section */}
+        <div className="space-y-8 mb-12">
+          {/* Row 1: Room Occupancy and Students by Branch */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Room Occupancy by Branch */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+            >
+              <h3 className="text-xl font-light tracking-tight text-neutral-900 mb-6">
+                Room Occupancy by Branch
+              </h3>
+              {chartData.roomsByBranch.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData.roomsByBranch}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" stroke="#6b7280" style={{ fontSize: "12px" }} />
+                    <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "12px",
+                        padding: "12px",
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="occupied" fill="#3b82f6" name="Occupied" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="available" fill="#10b981" name="Available" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-neutral-500">
+                  No data available
+                </div>
+              )}
+            </motion.div>
+
+            {/* Students by Branch */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+            >
+              <h3 className="text-xl font-light tracking-tight text-neutral-900 mb-6">
+                Students by Branch
+              </h3>
+              {chartData.studentsByBranch.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData.studentsByBranch}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" stroke="#6b7280" style={{ fontSize: "12px" }} />
+                    <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "12px",
+                        padding: "12px",
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="active" fill="#06b6d4" name="Active" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="inactive" fill="#6b7280" name="Inactive" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-neutral-500">
+                  No data available
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Row 2: Fee Status, Maintenance, and Orders */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Fee Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+            >
+              <h3 className="text-xl font-light tracking-tight text-neutral-900 mb-6">
+                Fee Payment Status
+              </h3>
+              {chartData.feeStatus.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.feeStatus}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name}: ${percentage}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.feeStatus.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.name === "Paid" ? COLORS.pie.paid : COLORS.pie.unpaid}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-neutral-500">
+                  No data available
+                </div>
+              )}
+            </motion.div>
+
+            {/* Maintenance Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+            >
+              <h3 className="text-xl font-light tracking-tight text-neutral-900 mb-6">
+                Maintenance Requests
+              </h3>
+              {chartData.maintenanceByStatus.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.maintenanceByStatus}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.maintenanceByStatus.map((entry, index) => {
+                        const colorMap: Record<string, string> = {
+                          Pending: COLORS.pie.pending,
+                          "In Progress": COLORS.pie.inProgress,
+                          Completed: COLORS.pie.completed,
+                          Cancelled: COLORS.pie.cancelled,
+                        };
+                        return (
+                          <Cell key={`cell-${index}`} fill={colorMap[entry.name] || COLORS.primary[index % COLORS.primary.length]} />
+                        );
+                      })}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-neutral-500">
+                  No data available
+                </div>
+              )}
+            </motion.div>
+
+            {/* Food Orders Status */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50"
+            >
+              <h3 className="text-xl font-light tracking-tight text-neutral-900 mb-6">
+                Food Orders Status
+              </h3>
+              {chartData.ordersByStatus.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.ordersByStatus}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.ordersByStatus.map((entry, index) => {
+                        const colorMap: Record<string, string> = {
+                          Pending: COLORS.pie.pending,
+                          Completed: COLORS.pie.completed,
+                          Cancelled: COLORS.pie.cancelled,
+                        };
+                        return (
+                          <Cell key={`cell-${index}`} fill={colorMap[entry.name] || COLORS.primary[index % COLORS.primary.length]} />
+                        );
+                      })}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-neutral-500">
+                  No data available
+                </div>
+              )}
+            </motion.div>
+          </div>
         </div>
 
         {/* Management Sections */}
