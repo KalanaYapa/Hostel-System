@@ -5,8 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // Get all students
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -38,8 +43,13 @@ export async function GET(request: NextRequest) {
 // Update student (assign room, branch, etc.)
 export async function PATCH(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -234,8 +244,13 @@ export async function PATCH(request: NextRequest) {
 // Delete/deactivate student
 export async function DELETE(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
