@@ -18,7 +18,6 @@ export default function StudentLogin() {
   const [lockoutMessage, setLockoutMessage] = useState("");
   const [remainingTime, setRemainingTime] = useState(0);
 
-  // Check lockout status on component mount and update timer
   useEffect(() => {
     const checkLockout = () => {
       if (!formData.studentId) return;
@@ -29,7 +28,9 @@ export default function StudentLogin() {
         const minutes = Math.floor(lockoutStatus.remainingTime / 60);
         const seconds = lockoutStatus.remainingTime % 60;
         setLockoutMessage(
-          `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+          `Too many failed attempts. Please try again in ${minutes}:${seconds
+            .toString()
+            .padStart(2, "0")}`
         );
       } else {
         setLockoutMessage("");
@@ -39,7 +40,6 @@ export default function StudentLogin() {
 
     checkLockout();
 
-    // Update timer every second if locked out
     if (remainingTime > 0) {
       const timer = setInterval(() => {
         setRemainingTime((prev) => {
@@ -51,7 +51,9 @@ export default function StudentLogin() {
           const minutes = Math.floor(newTime / 60);
           const seconds = newTime % 60;
           setLockoutMessage(
-            `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+            `Too many failed attempts. Please try again in ${minutes}:${seconds
+              .toString()
+              .padStart(2, "0")}`
           );
           return newTime;
         });
@@ -64,13 +66,14 @@ export default function StudentLogin() {
     e.preventDefault();
     setError("");
 
-    // Check if user is locked out
     const lockoutStatus = rateLimiter.isLockedOut(formData.studentId);
     if (lockoutStatus.locked && lockoutStatus.remainingTime) {
       const minutes = Math.floor(lockoutStatus.remainingTime / 60);
       const seconds = lockoutStatus.remainingTime % 60;
       setError(
-        `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+        `Too many failed attempts. Please try again in ${minutes}:${seconds
+          .toString()
+          .padStart(2, "0")}`
       );
       setRemainingTime(lockoutStatus.remainingTime);
       return;
@@ -88,7 +91,6 @@ export default function StudentLogin() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Record failed attempt
         const result = rateLimiter.recordFailedAttempt(formData.studentId);
 
         if (result.locked && result.lockoutTime) {
@@ -98,7 +100,9 @@ export default function StudentLogin() {
           setRemainingTime(result.lockoutTime);
           toastMessages.auth.rateLimited(`${minutes} minutes`);
         } else {
-          const errorMsg = `${data.error || "Invalid credentials"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
+          const errorMsg = `${data.error || "Invalid credentials"}. ${
+            result.attemptsLeft
+          } attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
           setError(errorMsg);
           toastMessages.auth.loginError(errorMsg);
         }
@@ -106,17 +110,13 @@ export default function StudentLogin() {
         return;
       }
 
-      // Successful login - reset attempts
       rateLimiter.resetAttempts(formData.studentId);
 
-      // Store user type and data (token is in HTTP-only cookie)
       localStorage.setItem("userType", "student");
       localStorage.setItem("studentData", JSON.stringify(data.student));
 
-      // Show success toast
       toastMessages.auth.loginSuccess("student", data.student?.name);
 
-      // Redirect to student dashboard
       router.push("/student/dashboard");
     } catch (err) {
       const errorMsg = "An error occurred. Please try again.";
@@ -127,13 +127,13 @@ export default function StudentLogin() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100 order-1 lg:order-1">
+    <div className="min-h-screen flex bg-gradient-to-br from-indigo-100 via-white to-purple-100">
+      {/* Left Side */}
+      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-8 order-1">
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
-          <div className="text-center">
-            <div className="inline-block p-3 bg-indigo-100 rounded-2xl mb-4">
+          <div className="text-center space-y-2">
+            <div className="inline-block p-3 bg-indigo-100 rounded-2xl mb-4 shadow-md">
               <svg
                 className="h-12 w-12 text-indigo-600"
                 fill="none"
@@ -148,17 +148,16 @@ export default function StudentLogin() {
                 />
               </svg>
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
               Student Login
             </h2>
-            <p className="text-gray-600">
-              Access your hostel dashboard
-            </p>
+            <p className="text-gray-600">Access your hostel dashboard</p>
           </div>
 
           {/* Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/30 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,0,0,0.1)] hover:scale-[1.01]">
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Student ID */}
               <div>
                 <label
                   htmlFor="studentId"
@@ -187,7 +186,7 @@ export default function StudentLogin() {
                     name="studentId"
                     type="text"
                     required
-                    className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white/80 shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all"
                     placeholder="Enter your student ID"
                     value={formData.studentId}
                     onChange={(e) =>
@@ -197,6 +196,7 @@ export default function StudentLogin() {
                 </div>
               </div>
 
+              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -225,7 +225,7 @@ export default function StudentLogin() {
                     name="password"
                     type="password"
                     required
-                    className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-2xl bg-white/80 shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all"
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={(e) =>
@@ -235,8 +235,9 @@ export default function StudentLogin() {
                 </div>
               </div>
 
+              {/* Error */}
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start">
+                <div className="bg-red-100/70 backdrop-blur-md border border-red-300/50 text-red-700 px-4 py-3 rounded-xl text-sm shadow-sm flex items-start">
                   <svg
                     className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5"
                     fill="currentColor"
@@ -252,10 +253,16 @@ export default function StudentLogin() {
                 </div>
               )}
 
+              {/* Button */}
               <button
                 type="submit"
                 disabled={loading || remainingTime > 0}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
+                className="w-full flex justify-center items-center py-3 px-4 rounded-2xl text-base font-semibold text-white 
+                bg-gradient-to-r from-indigo-600 to-purple-600 
+                shadow-lg hover:shadow-xl 
+                hover:from-indigo-700 hover:to-purple-700 
+                focus:ring-4 focus:ring-indigo-300 
+                transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -304,7 +311,7 @@ export default function StudentLogin() {
             </form>
           </div>
 
-          {/* Footer Links */}
+          {/* Footer */}
           <div className="text-center space-y-3">
             <p className="text-sm text-gray-600">
               Don&apos;t have an account?{" "}
@@ -338,8 +345,8 @@ export default function StudentLogin() {
         </div>
       </div>
 
-      {/* Right Side - Carousel */}
-      <div className="hidden lg:block lg:w-1/2 xl:w-3/5 order-2 lg:order-2">
+      {/* Right Side */}
+      <div className="hidden lg:block lg:w-1/2 xl:w-3/5 order-2">
         <AuthCarousel />
       </div>
     </div>
