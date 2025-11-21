@@ -1,4 +1,5 @@
 "use client";
+
 // name verification
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -118,12 +119,12 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      <div className="w-full max-w-md backdrop-blur-xl bg-gray-900/40 rounded-3xl shadow-2xl p-10 space-y-8 border border-gray-700/60">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-900 via-teal-900 to-black">
+      <div className="w-full max-w-md backdrop-blur-xl bg-indigo-900/40 rounded-3xl shadow-2xl p-10 space-y-8 border border-indigo-700/60">
         <div className="text-center">
-          <div className="mx-auto h-14 w-14 bg-gradient-to-r from-gray-700 to-gray-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="mx-auto h-14 w-14 bg-gradient-to-r from-teal-600 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
             <svg
-              className="h-7 w-7 text-gray-100"
+              className="h-7 w-7 text-white"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -135,17 +136,17 @@ export default function AdminLogin() {
             </svg>
           </div>
 
-          <h2 className="mt-5 text-4xl font-extrabold text-gray-100 tracking-wide">
+          <h2 className="mt-5 text-4xl font-extrabold text-white tracking-wide">
             Admin Login
           </h2>
-          <p className="mt-1 text-sm text-gray-300 tracking-wide">
+          <p className="mt-1 text-sm text-indigo-200 tracking-wide">
             Access your management dashboard
           </p>
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-200">
+            <label htmlFor="password" className="block text-sm font-medium text-teal-200">
               Admin Password
             </label>
             <input
@@ -153,7 +154,7 @@ export default function AdminLogin() {
               name="password"
               type="password"
               required
-              className="mt-2 block w-full px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500 transition"
+              className="mt-2 block w-full px-4 py-3 rounded-xl bg-indigo-800 border border-indigo-700 text-white placeholder-indigo-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
               placeholder="Enter admin password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -161,7 +162,7 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="text-red-400 bg-red-900/40 text-sm text-center p-3 rounded-lg border border-red-700/40">
+            <div className="text-red-300 bg-red-900/40 text-sm text-center p-3 rounded-lg border border-red-700/40">
               {error}
             </div>
           )}
@@ -169,13 +170,17 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading || remainingTime > 0}
-            className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-teal-700 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Signing in..." : remainingTime > 0 ? "Account Locked" : "Sign in as Admin"}
+            {loading
+              ? "Signing in..."
+              : remainingTime > 0
+              ? "Account Locked"
+              : "Sign in as Admin"}
           </button>
 
           <div className="text-center">
-            <Link href="/" className="text-sm text-gray-400 hover:text-gray-200 transition">
+            <Link href="/" className="text-sm text-indigo-300 hover:text-indigo-100 transition">
               ⟵ Back to Home
             </Link>
           </div>
