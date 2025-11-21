@@ -122,12 +122,18 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center px-4 
+      bg-gradient-to-br from-purple-600 via-indigo-500 to-purple-700">
+
+      <div className="w-full max-w-md backdrop-blur-xl bg-white/20 
+        rounded-3xl shadow-2xl p-10 space-y-8 border border-white/30">
+
+        {/* Icon + Title */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-purple-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto h-14 w-14 bg-gradient-to-r from-purple-500 to-indigo-500 
+            rounded-2xl flex items-center justify-center shadow-lg">
             <svg
-              className="h-6 w-6 text-white"
+              className="h-7 w-7 text-white"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -138,19 +144,22 @@ export default function AdminLogin() {
               <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+
+          <h2 className="mt-5 text-4xl font-extrabold text-white drop-shadow-lg tracking-wide">
             Admin Login
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Access the hostel management dashboard
+
+          <p className="mt-1 text-sm text-purple-100 tracking-wide">
+            Access your management dashboard
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {/* Form */}
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-white/90"
             >
               Admin Password
             </label>
@@ -159,7 +168,11 @@ export default function AdminLogin() {
               name="password"
               type="password"
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+              className="mt-2 block w-full px-4 py-3 rounded-xl 
+              bg-white/20 backdrop-blur-md border border-white/40
+              text-white placeholder-purple-200
+              shadow-inner focus:outline-none focus:ring-2 focus:ring-purple-300 
+              transition"
               placeholder="Enter admin password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -167,7 +180,8 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded">
+            <div className="text-red-300 bg-red-900/30 text-sm text-center 
+            p-3 rounded-lg border border-red-400/30">
               {error}
             </div>
           )}
@@ -183,9 +197,9 @@ export default function AdminLogin() {
           <div className="text-center">
             <Link
               href="/"
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm text-purple-200 hover:text-white transition"
             >
-              Back to home
+              ⟵ Back to Home
             </Link>
           </div>
         </form>
