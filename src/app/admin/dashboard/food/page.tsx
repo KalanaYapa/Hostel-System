@@ -151,6 +151,14 @@ export default function FoodMenuPage() {
             category: "snacks",
             available: false,
           },
+          {
+            menuId: "11",
+            name: "noodles",
+            description: "vegetable, chicken with cheese or not",
+            price: 100,
+            category: "breakfast",
+            available: true,
+          },
         ]);
       }
     } catch (error) {
