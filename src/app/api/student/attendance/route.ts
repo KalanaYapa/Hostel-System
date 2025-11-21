@@ -5,15 +5,24 @@ import { verifyToken } from "@/lib/auth";
 // Get student's attendance history
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
+    if (!token) {
+      return NextResponse.json({
+        error: "Authentication required. Please log in to view your attendance."
+      }, { status: 401 });
     }
 
     const payload = verifyToken(token);
     if (!payload || payload.type !== "student") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        error: "Invalid authentication. Please log in again."
+      }, { status: 401 });
     }
 
     const studentId = payload.studentId;
@@ -24,11 +33,14 @@ export async function GET(request: NextRequest) {
       EntityType.ATTENDANCE
     );
 
-    return NextResponse.json({ attendance: attendanceRecords });
+    return NextResponse.json({
+      attendance: attendanceRecords,
+      message: attendanceRecords.length === 0 ? "No attendance records found. Start by marking your attendance today!" : undefined
+    });
   } catch (error) {
     console.error("Get attendance error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch attendance" },
+      { error: "Unable to fetch your attendance records. Please try again later." },
       { status: 500 }
     );
   }
@@ -37,15 +49,24 @@ export async function GET(request: NextRequest) {
 // Mark attendance
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
+    if (!token) {
+      return NextResponse.json({
+        error: "Authentication required. Please log in to mark attendance."
+      }, { status: 401 });
     }
 
     const payload = verifyToken(token);
     if (!payload || payload.type !== "student") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({
+        error: "Invalid authentication. Please log in again."
+      }, { status: 401 });
     }
 
     const studentId = payload.studentId;
@@ -57,14 +78,9 @@ export async function POST(request: NextRequest) {
     )) as Student | undefined;
 
     if (!student) {
-      return NextResponse.json({ error: "Student not found" }, { status: 404 });
-    }
-
-    if (!student.branch) {
-      return NextResponse.json(
-        { error: "Branch not assigned. Please contact admin." },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        error: "Student profile not found. Please contact the administrator."
+      }, { status: 404 });
     }
 
     // Get today's date (YYYY-MM-DD format)
@@ -77,10 +93,11 @@ export async function POST(request: NextRequest) {
     );
 
     if (existingAttendance) {
-      return NextResponse.json(
-        { error: "Attendance already marked for today" },
-        { status: 409 }
-      );
+      return NextResponse.json({
+        error: "You have already marked your attendance for today. Come back tomorrow!",
+        alreadyMarked: true,
+        markedAt: existingAttendance.checkInTime
+      }, { status: 409 });
     }
 
     // Create attendance record
@@ -98,14 +115,20 @@ export async function POST(request: NextRequest) {
 
     await db.put(attendance);
 
+    const checkInTime = new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
     return NextResponse.json({
-      message: "Attendance marked successfully",
+      message: `Attendance marked successfully at ${checkInTime}! Have a great day!`,
       attendance,
     });
   } catch (error) {
     console.error("Mark attendance error:", error);
     return NextResponse.json(
-      { error: "Failed to mark attendance" },
+      { error: "An unexpected error occurred while marking attendance. Please try again or contact support if the problem persists." },
       { status: 500 }
     );
   }

@@ -59,10 +59,8 @@ export default function StatisticsPage() {
 
   const fetchStatistics = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/statistics", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/statistics");
 
       if (response.ok) {
         const data = await response.json();
