@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import db, { EntityType, Student } from "@/lib/dynamodb";
-import { hashPassword, generateStudentToken } from "@/lib/auth";
+import { hashPassword, generateStudentToken, setAuthCookie } from "@/lib/auth";
+import { studentSignupSchema } from "@/lib/schemas/auth";
+import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { studentId, password, name, email, phone } = body;
 
-    // Validation
-    if (!studentId || !password || !name || !email || !phone) {
+    // Validate and parse request body with Zod
+    const validationResult = studentSignupSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => err.message).join(", ");
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: `Validation failed: ${errors}` },
         { status: 400 }
       );
     }
 
-    // Check if student already exists
+    const { studentId, password, name, email, phone } = validationResult.data;
+
+    // Check if student already exists using validated input
     const existingStudent = await db.get(
       `${EntityType.STUDENT}#${studentId}`,
       `${EntityType.STUDENT}#${studentId}`
@@ -28,19 +34,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
+    // Hash password using validated input
     const hashedPassword = await hashPassword(password);
 
-    // Create student record
+    // Create student record with validated data
     const student: Student = {
       PK: `${EntityType.STUDENT}#${studentId}`,
       SK: `${EntityType.STUDENT}#${studentId}`,
       entityType: EntityType.STUDENT,
-      studentId,
+      studentId: studentId,
       password: hashedPassword,
-      name,
-      email,
-      phone,
+      name: name,
+      email: email,
+      phone: phone,
+      branch: "Default",
+      roomNumber: "Default",
       registrationDate: new Date().toISOString(),
       feesPaid: false,
       active: true,
@@ -48,18 +56,18 @@ export async function POST(request: NextRequest) {
 
     await db.put(student);
 
-    // Generate token
+    // Generate token with validated data
     const token = generateStudentToken({
-      studentId,
-      name,
-      email,
+      studentId: studentId,
+      name: name,
+      email: email,
       type: "student",
     });
 
-    return NextResponse.json(
+    // Create response with student data
+    const response = NextResponse.json(
       {
         message: "Student registered successfully",
-        token,
         student: {
           studentId: student.studentId,
           name: student.name,
@@ -69,6 +77,11 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+
+    // Set HTTP-only cookie with token (XSS protection)
+    setAuthCookie(response, token, "student");
+
+    return response;
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json(

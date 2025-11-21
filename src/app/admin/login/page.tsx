@@ -1,18 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import rateLimiter from "@/lib/rateLimit";
+import { toastMessages } from "@/lib/toast-messages";
 
 export default function AdminLogin() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lockoutMessage, setLockoutMessage] = useState("");
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  const ADMIN_IDENTIFIER = "admin"; // Use a constant identifier for admin
+
+  // Check lockout status on component mount and update timer
+  useEffect(() => {
+    const checkLockout = () => {
+      const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
+      if (lockoutStatus.locked && lockoutStatus.remainingTime) {
+        setRemainingTime(lockoutStatus.remainingTime);
+        const minutes = Math.floor(lockoutStatus.remainingTime / 60);
+        const seconds = lockoutStatus.remainingTime % 60;
+        setLockoutMessage(
+          `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+        );
+      } else {
+        setLockoutMessage("");
+        setRemainingTime(0);
+      }
+    };
+
+    checkLockout();
+
+    // Update timer every second if locked out
+    if (remainingTime > 0) {
+      const timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setLockoutMessage("");
+            return 0;
+          }
+          const newTime = prev - 1;
+          const minutes = Math.floor(newTime / 60);
+          const seconds = newTime % 60;
+          setLockoutMessage(
+            `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+          );
+          return newTime;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [remainingTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Check if admin is locked out
+    const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
+    if (lockoutStatus.locked && lockoutStatus.remainingTime) {
+      const minutes = Math.floor(lockoutStatus.remainingTime / 60);
+      const seconds = lockoutStatus.remainingTime % 60;
+      setError(
+        `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+      );
+      setRemainingTime(lockoutStatus.remainingTime);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -25,19 +84,39 @@ export default function AdminLogin() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Login failed");
+        // Record failed attempt
+        const result = rateLimiter.recordFailedAttempt(ADMIN_IDENTIFIER);
+
+        if (result.locked && result.lockoutTime) {
+          const minutes = Math.floor(result.lockoutTime / 60);
+          const errorMsg = `Too many failed login attempts. Account locked for ${minutes} minutes.`;
+          setError(errorMsg);
+          setRemainingTime(result.lockoutTime);
+          toastMessages.auth.rateLimited(`${minutes} minutes`);
+        } else {
+          const errorMsg = `${data.error || "Invalid password"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
+          setError(errorMsg);
+          toastMessages.auth.loginError(errorMsg);
+        }
         setLoading(false);
         return;
       }
 
-      // Store token
-      localStorage.setItem("token", data.token);
+      // Successful login - reset attempts
+      rateLimiter.resetAttempts(ADMIN_IDENTIFIER);
+
+      // Store user type (token is in HTTP-only cookie)
       localStorage.setItem("userType", "admin");
+
+      // Show success toast
+      toastMessages.auth.loginSuccess("admin");
 
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toastMessages.general.networkError();
       setLoading(false);
     }
   };
@@ -95,10 +174,10 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || remainingTime > 0}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Signing in..." : "Sign in as Admin"}
+            {loading ? "Signing in..." : remainingTime > 0 ? "Account Locked" : "Sign in as Admin"}
           </button>
 
           <div className="text-center">

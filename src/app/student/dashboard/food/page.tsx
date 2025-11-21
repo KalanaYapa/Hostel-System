@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface FoodMenuItem {
   menuId: string;
@@ -44,20 +45,19 @@ export default function FoodPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/food", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/food");
 
       if (response.ok) {
         const data = await response.json();
         setMenu(data.menu || []);
         setOrders(data.orders || []);
+      } else {
+        toastMessages.food.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      toastMessages.food.fetchError();
     } finally {
       setLoading(false);
     }
@@ -100,34 +100,33 @@ export default function FoodPage() {
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      toastMessages.general.validationError("Your cart is empty!");
       return;
     }
 
     setOrdering(true);
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/student/food", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ items: cart }),
       });
 
       if (response.ok) {
-        alert("Order placed successfully!");
+        toastMessages.food.orderSuccess();
         setCart([]);
         fetchData();
         setActiveTab("orders");
       } else {
-        alert("Failed to place order. Please try again.");
+        toastMessages.food.orderError();
       }
     } catch (error) {
       console.error("Order error:", error);
-      alert("Failed to place order. Please try again.");
+      toastMessages.food.orderError();
     } finally {
       setOrdering(false);
     }
@@ -222,7 +221,7 @@ export default function FoodPage() {
                             </p>
                           </div>
                           <span className="text-lg font-bold text-green-600">
-                            ₹{item.price}
+                            RS{item.price}
                           </span>
                         </div>
                         <p className="text-sm text-gray-700 mb-3">
@@ -260,7 +259,7 @@ export default function FoodPage() {
                           <div className="flex-1">
                             <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-gray-600">
-                              ₹{item.price} each
+                              RS{item.price} each
                             </p>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -290,7 +289,7 @@ export default function FoodPage() {
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-semibold text-lg">Total:</span>
                         <span className="font-bold text-xl text-green-600">
-                          ₹{getTotalAmount()}
+                          RS{getTotalAmount()}
                         </span>
                       </div>
                       <button
@@ -349,7 +348,7 @@ export default function FoodPage() {
                           <span>
                             {item.name} x {item.quantity}
                           </span>
-                          <span>₹{item.price * item.quantity}</span>
+                          <span>RS{item.price * item.quantity}</span>
                         </div>
                       ))}
                     </div>
@@ -357,7 +356,7 @@ export default function FoodPage() {
                     <div className="border-t pt-2 flex justify-between items-center">
                       <span className="font-semibold">Total:</span>
                       <span className="font-bold text-lg text-green-600">
-                        ₹{order.totalAmount}
+                        RS{order.totalAmount}
                       </span>
                     </div>
                   </motion.div>
