@@ -7,8 +7,7 @@ import Link from "next/link";
 import rateLimiter from "@/lib/rateLimit";
 import { toastMessages } from "@/lib/toast-messages";
 
-export default function AdminLogin() {
-  const router = useRouter();
+export default function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,13 +78,9 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
+      const MOCK_PASSWORD = "adminpassword";
 
-      const data = await response.json();
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
 
       if (!response.ok) {
         const result = rateLimiter.recordFailedAttempt(ADMIN_IDENTIFIER);
