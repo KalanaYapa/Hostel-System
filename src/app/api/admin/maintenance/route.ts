@@ -5,7 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // Get all maintenance requests
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -30,7 +36,13 @@ export async function GET(request: NextRequest) {
 // Update maintenance request status
 export async function PATCH(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -41,7 +53,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { requestId, studentId, status } = body;
+    const { requestId, studentId, status, adminNotes } = body;
 
     if (!requestId || !studentId || !status) {
       return NextResponse.json(
@@ -54,6 +66,10 @@ export async function PATCH(request: NextRequest) {
       status,
       updatedAt: new Date().toISOString(),
     };
+
+    if (adminNotes) {
+      updates.adminNotes = adminNotes;
+    }
 
     if (status === "completed") {
       updates.resolvedAt = new Date().toISOString();

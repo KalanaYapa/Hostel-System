@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/app/components/DashboardLayout";
 import { motion } from "framer-motion";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Student {
   studentId: string;
@@ -54,19 +55,21 @@ export default function StudentsManagementPage() {
 
   const fetchStudents = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/students", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/students");
 
       if (response.ok) {
         const data = await response.json();
         setStudents(data.students || []);
+        if (data.students && data.students.length > 0) {
+          toastMessages.students.fetchSuccess();
+        }
+      } else {
+        toastMessages.students.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch students:", error);
+      toastMessages.students.fetchError();
     } finally {
       setLoading(false);
     }
@@ -74,12 +77,8 @@ export default function StudentsManagementPage() {
 
   const fetchBranches = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/branches", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/branches");
 
       if (response.ok) {
         const data = await response.json();
@@ -92,12 +91,8 @@ export default function StudentsManagementPage() {
 
   const fetchRooms = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/rooms", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/rooms");
 
       if (response.ok) {
         const data = await response.json();
@@ -120,12 +115,11 @@ export default function StudentsManagementPage() {
     if (!editingStudent) return;
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/admin/students", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           studentId: editingStudent.studentId,
@@ -134,44 +128,42 @@ export default function StudentsManagementPage() {
       });
 
       if (response.ok) {
-        alert("Student updated successfully!");
+        toastMessages.students.updateSuccess(editingStudent.name);
         setEditingStudent(null);
         fetchStudents();
       } else {
-        alert("Failed to update student");
+        toastMessages.students.updateError();
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Failed to update student");
+      toastMessages.students.updateError();
     }
   };
 
   const handleDeactivate = async (studentId: string) => {
+    const student = students.find(s => s.studentId === studentId);
     if (!confirm("Are you sure you want to deactivate this student?")) {
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch(
         `/api/admin/students?studentId=${studentId}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
 
       if (response.ok) {
-        alert("Student deactivated successfully!");
+        toastMessages.students.deleteSuccess(student?.name);
         fetchStudents();
       } else {
-        alert("Failed to deactivate student");
+        toastMessages.students.deleteError();
       }
     } catch (error) {
       console.error("Deactivate error:", error);
-      alert("Failed to deactivate student");
+      toastMessages.students.deleteError();
     }
   };
 
@@ -254,13 +246,11 @@ export default function StudentsManagementPage() {
                         {student.branch ? (
                           branches.find(b => b.branchId === student.branch)?.name || student.branch
                         ) : (
-                          <span className="text-orange-600">Not Assigned</span>
+                          "Default"
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {student.roomNumber || (
-                          <span className="text-orange-600">Not Assigned</span>
-                        )}
+                        {student.roomNumber || "Default"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
