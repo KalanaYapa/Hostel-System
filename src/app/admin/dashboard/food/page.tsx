@@ -22,12 +22,111 @@ export default function AdminLogin() {
         body: JSON.stringify({ password }),
       });
 
+<<<<<<< HEAD
+      if (response.ok) {
+        const data = await response.json();
+        setMenuItems(data.menu || []);
+        setOrders(data.orders || []);
+      } else {
+        console.error("Failed to fetch menu items");
+        setMenuItems([
+          {
+            menuId: "1",
+            name: "Paneer Paratha",
+            description: "Whole wheat paratha stuffed with spiced paneer",
+            price: 40,
+            category: "breakfast",
+            available: true,
+          },
+          {
+            menuId: "2",
+            name: "Idli Sambar",
+            description: "Steamed rice cakes with lentil curry and chutney",
+            price: 35,
+            category: "breakfast",
+            available: true,
+          },
+          {
+            menuId: "3",
+            name: "Dal Makhani with Rice",
+            description: "Creamy black lentils with steamed basmati rice",
+            price: 70,
+            category: "lunch",
+            available: true,
+          },
+          {
+            menuId: "4",
+            name: "Chicken Biryani",
+            description: "Fragrant basmati rice cooked with marinated chicken",
+            price: 120,
+            category: "lunch",
+            available: true,
+          },
+          {
+            menuId: "5",
+            name: "Veg Thali",
+            description: "Complete meal with dal, sabzi, roti, rice, and curd",
+            price: 90,
+            category: "lunch",
+            available: true,
+          },
+          {
+            menuId: "6",
+            name: "Roti with Paneer Curry",
+            description: "Indian bread with cottage cheese curry",
+            price: 80,
+            category: "dinner",
+            available: true,
+          },
+          {
+            menuId: "7",
+            name: "Fried Rice",
+            description: "Indo-Chinese style fried rice with vegetables",
+            price: 65,
+            category: "dinner",
+            available: true,
+          },
+          {
+            menuId: "8",
+            name: "Samosa",
+            description: "Crispy pastry filled with spiced potatoes",
+            price: 20,
+            category: "snacks",
+            available: true,
+          },
+          {
+            menuId: "9",
+            name: "Veg Sandwich",
+            description: "Grilled sandwich with vegetables and cheese",
+            price: 40,
+            category: "snacks",
+            available: true,
+          },
+          {
+            menuId: "10",
+            name: "Pakora",
+            description: "Crispy vegetable fritters",
+            price: 30,
+            category: "snacks",
+            available: false,
+          },
+          {
+            menuId: "11",
+            name: "noodles",
+            description: "vegetable, chicken with cheese or not",
+            price: 100,
+            category: "breakfast",
+            available: true,
+          },
+        ]);
+=======
       const data = await response.json();
 
       if (!response.ok) {
         setError(data.error || "Login failed");
         setLoading(false);
         return;
+>>>>>>> 5a770e0fa2590512f31d7de009221f095005386a
       }
 
       localStorage.setItem("token", data.token);
