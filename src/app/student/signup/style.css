@@ -31,6 +31,7 @@ body {
 .user-icon {
     height: 50px;
     stroke-width: 2;
+    width: 30px;
 }
 
 h1 {
