@@ -32,6 +32,9 @@ export enum EntityType {
   EMERGENCY_CONTACT = "EMERGENCY_CONTACT",
   PAYMENT = "PAYMENT",
   ATTENDANCE = "ATTENDANCE",
+  LATE_PASS = "LATE_PASS",
+  OTP = "OTP",
+  PENDING_STUDENT = "PENDING_STUDENT",
 }
 
 // Single Table Design Structure:
@@ -92,6 +95,7 @@ export interface MaintenanceRequest {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
+  adminNotes?: string;
 }
 
 export interface FoodMenuItem {
@@ -165,6 +169,50 @@ export interface Attendance {
   present: boolean;
   checkInTime?: string;
   checkOutTime?: string;
+}
+
+export interface LatePassRequest {
+  PK: string; // LATE_PASS#studentId
+  SK: string; // LATE_PASS#requestId
+  entityType: EntityType.LATE_PASS;
+  requestId: string;
+  studentId: string;
+  studentName: string;
+  branch: string;
+  roomNumber: string;
+  requestedDate: string; // Date for which pass is needed (YYYY-MM-DD)
+  startTime: string; // Time when student will leave (HH:MM)
+  endTime: string; // Expected return time (HH:MM)
+  reason: string; // Category: personal, medical, family, academic, other
+  description: string; // Detailed description
+  status: "pending" | "approved" | "rejected";
+  approvalNotes?: string; // Admin notes when approving/rejecting
+  createdAt: string;
+  approvedAt?: string;
+  approvedBy?: string; // Admin who approved/rejected
+}
+
+export interface OTPVerification {
+  PK: string; // OTP#email
+  SK: string; // OTP#email
+  entityType: EntityType.OTP;
+  email: string;
+  otp: string;
+  createdAt: string;
+  verified: boolean;
+  attempts: number; // Track failed verification attempts
+}
+
+export interface PendingStudent {
+  PK: string; // PENDING_STUDENT#email
+  SK: string; // PENDING_STUDENT#email
+  entityType: EntityType.PENDING_STUDENT;
+  studentId: string;
+  password: string; // hashed
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
 }
 
 // Helper functions

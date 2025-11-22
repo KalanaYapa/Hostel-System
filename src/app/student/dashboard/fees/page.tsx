@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface Payment {
   paymentId: string;
@@ -12,12 +13,25 @@ interface Payment {
   createdAt: string;
 }
 
+interface FeeConfiguration {
+  year: string;
+  hostelFee: number;
+  maintenanceFee: number;
+  securityDeposit: number;
+  otherFees: number;
+  totalFee: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function FeesPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
-  const [amount, setAmount] = useState("5000");
+  const [amount, setAmount] = useState("");
   const [feesPaid, setFeesPaid] = useState(false);
+  const [feeConfig, setFeeConfig] = useState<FeeConfiguration | null>(null);
+  const [loadingFees, setLoadingFees] = useState(true);
 
   useEffect(() => {
     const studentData = localStorage.getItem("studentData");
@@ -25,24 +39,49 @@ export default function FeesPage() {
       const data = JSON.parse(studentData);
       setFeesPaid(data.feesPaid);
     }
+    fetchFeeConfiguration();
     fetchPayments();
   }, []);
 
+  const fetchFeeConfiguration = async () => {
+    try {
+      const response = await fetch("/api/student/fees");
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.feeConfiguration) {
+          setFeeConfig(data.feeConfiguration);
+          setAmount(data.feeConfiguration.totalFee.toString());
+        } else {
+          // Fallback to default if no configuration found
+          setAmount("5000");
+        }
+      } else {
+        // Fallback to default on error
+        setAmount("5000");
+      }
+    } catch (error) {
+      console.error("Failed to fetch fee configuration:", error);
+      setAmount("5000");
+    } finally {
+      setLoadingFees(false);
+    }
+  };
+
   const fetchPayments = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/student/payment", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/student/payment");
 
       if (response.ok) {
         const data = await response.json();
         setPayments(data.payments || []);
+      } else {
+        toastMessages.fees.fetchError();
       }
     } catch (error) {
       console.error("Failed to fetch payments:", error);
+      toastMessages.fees.fetchError();
     } finally {
       setLoading(false);
     }
@@ -53,12 +92,11 @@ export default function FeesPage() {
     setPaying(true);
 
     try {
-      const token = localStorage.getItem("token");
+      // Cookies are sent automatically
       const response = await fetch("/api/student/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           amount: parseFloat(amount),
@@ -67,7 +105,7 @@ export default function FeesPage() {
       });
 
       if (response.ok) {
-        alert("Payment successful!");
+        toastMessages.fees.paymentSuccess();
         setFeesPaid(true);
 
         const studentData = localStorage.getItem("studentData");
@@ -79,11 +117,11 @@ export default function FeesPage() {
 
         fetchPayments();
       } else {
-        alert("Payment failed. Please try again.");
+        toastMessages.fees.paymentError();
       }
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Payment failed. Please try again.");
+      toastMessages.fees.paymentError();
     } finally {
       setPaying(false);
     }
@@ -113,40 +151,79 @@ export default function FeesPage() {
           )}
 
           <form onSubmit={handlePayment} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Amount
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-3.5 text-neutral-600 font-medium">₹</span>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 transition-all bg-white"
-                  required
-                  min="1"
-                />
+            {loadingFees ? (
+              <div className="text-center py-8">
+                <p className="text-neutral-600">Loading fee configuration...</p>
               </div>
-              <p className="mt-2 text-sm text-neutral-500">
-                Standard hostel fee: ₹5,000 per semester
-              </p>
-            </div>
+            ) : (
+              <>
+                {feeConfig && (
+                  <div className="bg-blue-50/50 border border-blue-200/50 rounded-2xl p-5 mb-4">
+                    <h3 className="font-medium text-neutral-900 mb-3">Fee Breakdown ({feeConfig.year}):</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Hostel Fee:</span>
+                        <span className="font-medium text-neutral-900">RS {feeConfig.hostelFee}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Maintenance Fee:</span>
+                        <span className="font-medium text-neutral-900">RS {feeConfig.maintenanceFee}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Security Deposit:</span>
+                        <span className="font-medium text-neutral-900">RS {feeConfig.securityDeposit}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Other Fees:</span>
+                        <span className="font-medium text-neutral-900">RS {feeConfig.otherFees}</span>
+                      </div>
+                      <div className="h-px bg-neutral-300 my-2"></div>
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-neutral-900">Total Fee:</span>
+                        <span className="font-semibold text-neutral-900">RS {feeConfig.totalFee}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-3.5 text-neutral-600 font-medium">RS</span>
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-neutral-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 transition-all bg-white"
+                      required
+                      min="1"
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-neutral-500">
+                    {feeConfig
+                      ? `Configured fee for ${feeConfig.year}: RS ${feeConfig.totalFee}`
+                      : "Standard hostel fee: RS 5,000 per semester"}
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="bg-neutral-50 p-6 rounded-2xl">
               <h3 className="font-medium text-neutral-900 mb-3">Payment Details:</h3>
               <p className="text-sm text-neutral-600">Type: Hostel Fee</p>
               <p className="text-sm text-neutral-600">
-                Amount: ₹{amount || "0"}
+                Amount: RS {amount || "0"}
               </p>
             </div>
 
             <button
               type="submit"
-              disabled={paying || feesPaid}
+              disabled={paying || feesPaid || loadingFees}
               className="w-full py-3.5 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-2xl hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all shadow-lg disabled:shadow-none"
             >
-              {paying ? "Processing..." : feesPaid ? "Already Paid" : "Pay Now"}
+              {paying ? "Processing..." : feesPaid ? "Already Paid" : loadingFees ? "Loading..." : "Pay Now"}
             </button>
 
             <p className="text-xs text-neutral-400 text-center">
@@ -200,7 +277,7 @@ export default function FeesPage() {
                     </span>
                   </div>
                   <p className="text-2xl font-light text-neutral-900">
-                    ₹{payment.amount}
+                    RS {payment.amount}
                   </p>
                   <p className="text-xs text-neutral-400 mt-2">
                     ID: {payment.paymentId}

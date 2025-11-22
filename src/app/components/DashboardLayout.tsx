@@ -17,10 +17,10 @@ export default function DashboardLayout({ children, type, title, subtitle }: Das
   const [studentName, setStudentName] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Cookies are sent automatically
     const userType = localStorage.getItem("userType");
 
-    if (!token || userType !== type) {
+    if (userType !== type) {
       router.push(`/${type}/login`);
       return;
     }
@@ -35,7 +35,6 @@ export default function DashboardLayout({ children, type, title, subtitle }: Das
   }, [router, type]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("userType");
     if (type === "student") {
       localStorage.removeItem("studentData");

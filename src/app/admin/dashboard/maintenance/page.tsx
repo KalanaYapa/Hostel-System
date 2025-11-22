@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "@/app/components/DashboardLayout";
+import { toastMessages } from "@/lib/toast-messages";
 
 interface MaintenanceRequest {
   requestId: string;
@@ -38,10 +39,8 @@ export default function MaintenancePage() {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/maintenance", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/maintenance");
 
       if (response.ok) {
         const data = await response.json();
@@ -126,37 +125,34 @@ export default function MaintenancePage() {
     }
   };
 
-  const handleUpdateStatus = async (requestId: string, status: string, notes: string) => {
+  const handleUpdateStatus = async (requestId: string, studentId: string, status: string, notes: string) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/maintenance/${requestId}`, {
-        method: "PUT",
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/maintenance", {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status, adminNotes: notes }),
+        body: JSON.stringify({
+          requestId,
+          studentId,
+          status,
+          adminNotes: notes
+        }),
       });
 
       if (response.ok) {
-        alert("Request updated successfully!");
+        toastMessages.maintenance.updateSuccess(status);
         setShowDetailModal(false);
         setSelectedRequest(null);
         fetchRequests();
       } else {
-        // Update mock data
-        setRequests(requests.map(req =>
-          req.requestId === requestId
-            ? { ...req, status: status as any, adminNotes: notes, updatedAt: new Date().toISOString() }
-            : req
-        ));
-        alert("Request updated successfully!");
-        setShowDetailModal(false);
-        setSelectedRequest(null);
+        const error = await response.json();
+        toastMessages.maintenance.updateError();
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to update request");
+      toastMessages.maintenance.updateError();
     }
   };
 
@@ -446,7 +442,7 @@ export default function MaintenancePage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleUpdateStatus(selectedRequest.requestId, newStatus, adminNotes)}
+                  onClick={() => handleUpdateStatus(selectedRequest.requestId, selectedRequest.studentId, newStatus, adminNotes)}
                   className="flex-1 px-4 py-3 bg-gradient-to-br from-blue-500 to-purple-500 text-white rounded-2xl hover:shadow-lg transition-all font-medium"
                 >
                   Update Request

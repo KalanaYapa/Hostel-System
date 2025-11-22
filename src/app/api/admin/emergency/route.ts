@@ -5,7 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // Get all emergency contacts
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -29,7 +35,13 @@ export async function GET(request: NextRequest) {
 // Add new emergency contact
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -81,7 +93,13 @@ export async function POST(request: NextRequest) {
 // Update emergency contact
 export async function PATCH(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -123,7 +141,13 @@ export async function PATCH(request: NextRequest) {
 // Delete emergency contact
 export async function DELETE(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

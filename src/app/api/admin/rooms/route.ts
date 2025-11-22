@@ -5,8 +5,13 @@ import { verifyToken } from "@/lib/auth";
 // Get all rooms
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -32,8 +37,13 @@ export async function GET(request: NextRequest) {
 // Create a new room
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -107,8 +117,13 @@ export async function POST(request: NextRequest) {
 // Update a room
 export async function PATCH(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -151,8 +166,13 @@ export async function PATCH(request: NextRequest) {
 // Delete a room
 export async function DELETE(request: NextRequest) {
   try {
-    // Verify admin authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify admin authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("admin_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

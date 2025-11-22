@@ -89,10 +89,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    // Cookies are sent automatically
     const userType = localStorage.getItem("userType");
 
-    if (!token || userType !== "admin") {
+    if (userType !== "admin") {
       router.push("/admin/login");
       return;
     }
@@ -102,12 +102,8 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch("/api/admin/stats", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Cookies are sent automatically
+      const response = await fetch("/api/admin/stats");
 
       if (response.ok) {
         const data = await response.json();
@@ -122,7 +118,6 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("userType");
     router.push("/admin/login");
   };

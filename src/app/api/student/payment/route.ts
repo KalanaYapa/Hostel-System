@@ -4,8 +4,13 @@ import { verifyToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -71,8 +76,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -86,11 +96,20 @@ export async function GET(request: NextRequest) {
 
     // Get all payments for this student
     const payments = await db.query(
-      `${EntityType.PAYMENT}#${studentId}`,
-      EntityType.PAYMENT
+      `${EntityType.PAYMENT}#${studentId}`
     );
 
-    return NextResponse.json({ payments });
+    console.log("Student ID:", studentId);
+    console.log("Query PK:", `${EntityType.PAYMENT}#${studentId}`);
+    console.log("Payments found:", payments.length);
+    console.log("Payments data:", JSON.stringify(payments, null, 2));
+
+    // Sort payments by creation date (newest first)
+    const sortedPayments = payments.sort((a: any, b: any) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    return NextResponse.json({ payments: sortedPayments });
   } catch (error) {
     console.error("Get payments error:", error);
     return NextResponse.json(
