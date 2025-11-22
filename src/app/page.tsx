@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-neutral-50 transition-colors duration-500">
+    // Changed bg-neutral-50 to bg-neutral-100 for a slightly richer background
+    <div className="min-h-screen **bg-neutral-100** transition-colors duration-500">
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
