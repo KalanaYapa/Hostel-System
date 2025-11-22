@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import db, { EntityType, Student } from "@/lib/dynamodb";
-import { verifyPassword, generateStudentToken } from "@/lib/auth";
+import { verifyPassword, generateStudentToken, setAuthCookie } from "@/lib/auth";
+import { studentLoginSchema } from "@/lib/schemas/auth";
+import { z } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { studentId, password } = body;
 
-    // Validation
-    if (!studentId || !password) {
+    // Validate and parse request body with Zod
+    const validationResult = studentLoginSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => err.message).join(", ");
       return NextResponse.json(
-        { error: "Student ID and password are required" },
+        { error: `Validation failed: ${errors}` },
         { status: 400 }
       );
     }
 
-    // Get student record
+    const { studentId, password } = validationResult.data;
+
+    // Get student record using validated input
     const student = (await db.get(
       `${EntityType.STUDENT}#${studentId}`,
       `${EntityType.STUDENT}#${studentId}`
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
+    // Verify password using validated input
     const isValidPassword = await verifyPassword(password, student.password);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -53,9 +59,9 @@ export async function POST(request: NextRequest) {
       type: "student",
     });
 
-    return NextResponse.json({
+    // Create response with student data (token sent via HTTP-only cookie only)
+    const response = NextResponse.json({
       message: "Login successful",
-      token,
       student: {
         studentId: student.studentId,
         name: student.name,
@@ -66,6 +72,11 @@ export async function POST(request: NextRequest) {
         feesPaid: student.feesPaid,
       },
     });
+
+    // Set HTTP-only cookie with token (XSS protection)
+    setAuthCookie(response, token, "student");
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(

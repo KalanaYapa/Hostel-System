@@ -4,8 +4,13 @@ import { verifyToken } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const token = request.headers.get("authorization")?.replace("Bearer ", "");
+    // Verify authentication - try cookie first, then Authorization header
+    let token = request.cookies.get("student_token")?.value;
+
+    if (!token) {
+      token = request.headers.get("authorization")?.replace("Bearer ", "");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
