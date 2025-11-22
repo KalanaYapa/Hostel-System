@@ -150,10 +150,10 @@ export default function StudentLogin() {
                 />
               </svg>
             </div>
-            <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-              Student Login
-            </h2>
-            <p className="text-gray-600">Access your hostel dashboard</p>
+              <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                Student Login
+              </h2>
+              <p className="text-gray-600">Access your hostel dashboard</p>
           </div>
 
           {/* Form */}
@@ -163,8 +163,7 @@ export default function StudentLogin() {
               <div>
                 <label
                   htmlFor="studentId"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
+                  className="block text-sm font-semibold text-gray-700 mb-2" >
                   Student ID
                 </label>
                 <div className="relative">
