@@ -6,66 +6,67 @@ import Link from "next/link";
 import rateLimiter from "@/lib/rateLimit";
 import { toastMessages } from "@/lib/toast-messages";
 
-export default function App() {
+export default function AdminLogin() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockoutMessage, setLockoutMessage] = useState("");
   const [remainingTime, setRemainingTime] = useState(0);
 
-  const ADMIN_IDENTIFIER = "admin";
-  const router = useRouter();
+  const ADMIN_IDENTIFIER = "admin"; // Use a constant identifier for admin
 
+  // Check lockout status on component mount and update timer
   useEffect(() => {
-    const updateLockoutStatus = () => {
+    const checkLockout = () => {
       const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
       if (lockoutStatus.locked && lockoutStatus.remainingTime) {
         setRemainingTime(lockoutStatus.remainingTime);
+        const minutes = Math.floor(lockoutStatus.remainingTime / 60);
+        const seconds = lockoutStatus.remainingTime % 60;
+        setLockoutMessage(
+          `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+        );
       } else {
-        setRemainingTime(0);
         setLockoutMessage("");
+        setRemainingTime(0);
       }
     };
 
-    updateLockoutStatus();
-  }, []);
+    checkLockout();
 
-  useEffect(() => {
-    if (remainingTime <= 0) return;
-
-    const timer = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setLockoutMessage("");
-          return 0;
-        }
-        const newTime = prev - 1;
-        const minutes = Math.floor(newTime / 60);
-        const seconds = newTime % 60;
-        setLockoutMessage(
-          `Too many failed attempts. Try again in ${minutes}:${seconds
-            .toString()
-            .padStart(2, "0")}`
-        );
-        return newTime;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
+    // Update timer every second if locked out
+    if (remainingTime > 0) {
+      const timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setLockoutMessage("");
+            return 0;
+          }
+          const newTime = prev - 1;
+          const minutes = Math.floor(newTime / 60);
+          const seconds = newTime % 60;
+          setLockoutMessage(
+            `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
+          );
+          return newTime;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
   }, [remainingTime]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    // Check if admin is locked out
     const lockoutStatus = rateLimiter.isLockedOut(ADMIN_IDENTIFIER);
     if (lockoutStatus.locked && lockoutStatus.remainingTime) {
+      const minutes = Math.floor(lockoutStatus.remainingTime / 60);
+      const seconds = lockoutStatus.remainingTime % 60;
       setError(
-        `Too many failed attempts. Try again in ${Math.floor(
-          lockoutStatus.remainingTime / 60
-        )}:${(lockoutStatus.remainingTime % 60).toString().padStart(2, "0")}`
+        `Too many failed attempts. Please try again in ${minutes}:${seconds.toString().padStart(2, "0")}`
       );
       setRemainingTime(lockoutStatus.remainingTime);
       return;
@@ -74,11 +75,16 @@ export default function App() {
     setLoading(true);
 
     try {
-      const MOCK_PASSWORD = "adminpassword";
+      const response = await fetch("/api/auth/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const data = await response.json();
 
-      if (password !== MOCK_PASSWORD) {
+      if (!response.ok) {
+        // Record failed attempt
         const result = rateLimiter.recordFailedAttempt(ADMIN_IDENTIFIER);
 
         if (result.locked && result.lockoutTime) {
@@ -88,9 +94,7 @@ export default function App() {
           setRemainingTime(result.lockoutTime);
           toastMessages.auth.rateLimited(`${minutes} minutes`);
         } else {
-          const errorMsg = `Invalid password. ${result.attemptsLeft} attempt${
-            result.attemptsLeft !== 1 ? "s" : ""
-          } remaining.`;
+          const errorMsg = `${data.error || "Invalid password"}. ${result.attemptsLeft} attempt${result.attemptsLeft !== 1 ? "s" : ""} remaining.`;
           setError(errorMsg);
           toastMessages.auth.loginError(errorMsg);
         }
@@ -98,24 +102,32 @@ export default function App() {
         return;
       }
 
+      // Successful login - reset attempts
       rateLimiter.resetAttempts(ADMIN_IDENTIFIER);
+
+      // Store user type (token is in HTTP-only cookie)
       localStorage.setItem("userType", "admin");
+
+      // Show success toast
       toastMessages.auth.loginSuccess("admin");
+
+      // Redirect to admin dashboard
       router.push("/admin/dashboard");
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
       toastMessages.general.networkError();
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-900 via-teal-900 to-black">
-      <div className="w-full max-w-md backdrop-blur-xl bg-indigo-900/40 rounded-3xl shadow-2xl p-10 space-y-8 border border-indigo-700/60">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 px-4">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div className="text-center">
-          <div className="mx-auto h-14 w-14 bg-gradient-to-r from-teal-600 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="mx-auto h-12 w-12 bg-purple-600 rounded-full flex items-center justify-center">
             <svg
-              className="h-7 w-7 text-white"
+              className="h-6 w-6 text-white"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -126,75 +138,54 @@ export default function App() {
               <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-
-          <h2 className="mt-5 text-4xl font-extrabold text-white tracking-wide">
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Admin Login
           </h2>
-          <p className="mt-1 text-sm text-indigo-200 tracking-wide">
-            Access your management dashboard
+          <p className="mt-2 text-sm text-gray-600">
+            Access the hostel management dashboard
           </p>
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          <div className="relative">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-teal-200"
+              className="block text-sm font-medium text-gray-700"
             >
               Admin Password
             </label>
             <input
               id="password"
               name="password"
-              type={showPassword ? "text" : "password"}
+              type="password"
               required
-              autoFocus
-              autoComplete="current-password"
-              className="mt-2 block w-full px-4 py-3 rounded-xl bg-indigo-800 border border-indigo-700 text-white placeholder-indigo-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
               placeholder="Enter admin password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <button
-              type="button"
-              aria-label="Toggle password visibility"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-300 hover:text-white transition"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
           </div>
 
           {error && (
-            <div className="text-red-300 bg-red-900/40 text-sm text-center p-3 rounded-lg border border-red-700/40">
+            <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded">
               {error}
-            </div>
-          )}
-
-          {lockoutMessage && (
-            <div className="text-yellow-200 bg-yellow-900/30 text-sm text-center p-2 rounded-lg border border-yellow-700/40">
-              {lockoutMessage}
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading || remainingTime > 0}
-            className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-teal-700 hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading
-              ? "Signing in..."
-              : remainingTime > 0
-              ? "Account Locked"
-              : "Sign in as Admin"}
+            {loading ? "Signing in..." : remainingTime > 0 ? "Account Locked" : "Sign in as Admin"}
           </button>
 
           <div className="text-center">
             <Link
               href="/"
-              className="text-sm text-indigo-300 hover:text-indigo-100 transition"
+              className="text-sm text-gray-600 hover:text-gray-900"
             >
-              ⟵ Back to Home
+              Back to home
             </Link>
           </div>
         </form>
