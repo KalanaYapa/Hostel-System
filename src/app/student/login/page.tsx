@@ -16,7 +16,7 @@ export default function StudentLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockoutMessage, setLockoutMessage] = useState("");
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [remainingTime , setRemainingTime] = useState(0);
 
   useEffect(() => {
     const checkLockout = () => {
