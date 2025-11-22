@@ -297,7 +297,7 @@ export default function AttendancePage() {
           <div className="lg:col-span-1">
             <div className="bg-white/60 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-neutral-200/50 sticky top-4">
               <h2 className="text-2xl font-light tracking-tight mb-6">
-                Attendance Statistics
+                 Attendance Statistics
               </h2>
 
               <div className="space-y-4">
